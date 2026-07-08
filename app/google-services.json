@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "348964213705",
+    "firebase_url": "https://smart-home-1c2af-default-rtdb.firebaseio.com",
+    "project_id": "smart-home-1c2af",
+    "storage_bucket": "smart-home-1c2af.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:348964213705:android:b2446a404ce8f51d014e18",
+        "android_client_info": {
+          "package_name": "com.example.smarthomemonitoringcontrolsystem"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDoTPNjXnYksZ9TqqpH4VOgddPe7iO1rw0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
