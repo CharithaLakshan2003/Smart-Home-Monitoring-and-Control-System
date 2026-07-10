@@ -1,0 +1,11 @@
+.git
+.gitignore
+.gradle
+.idea
+.kotlin
+build
+app/build
+*.iml
+local.properties
+*.pro
+*.lock
