@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Hardware Simulator Dashboard — A companion web-based simulator for the Smart Home Monitoring & Control System. Visualize and control IoT device states in real-time.">
+  <title>Hardware Simulator — Smart Home</title>
+
+  <!-- Favicon -->
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏠</text></svg>">
+
+  <!-- Stylesheet -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="app-container">
+
+    <!-- ── Header ── -->
+    <header class="header">
+      <div class="header-left">
+        <div class="header-icon">🏠</div>
+        <div>
+          <h1 class="header-title">Hardware Simulator</h1>
+          <p class="header-subtitle">Smart Home Monitoring & Control System</p>
+        </div>
+      </div>
+      <div class="header-right">
+        <div class="device-counter" id="device-counter">
+          <strong>0</strong> ON / <strong>0</strong> Total
+        </div>
+        <div class="connection-status disconnected" id="connection-status">
+          <span class="connection-dot"></span>
+          <span id="connection-text">Connecting…</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- ── Floor Tabs ── -->
+    <nav class="floor-tabs-container">
+      <div class="floor-tabs-label">Floor Plans</div>
+      <div class="floor-tabs" id="floor-tabs">
+        <button class="floor-tab floor-tab-all active">
+          All Floors
+          <span class="tab-badge">0</span>
+        </button>
+        <!-- Floor tabs rendered dynamically by app.js -->
+      </div>
+    </nav>
+
+    <!-- ── Main Layout: Device Grid + Activity Log ── -->
+    <div class="main-layout">
+
+      <!-- Device Grid -->
+      <section class="device-grid-section">
+        <div class="section-header">
+          <div class="section-title">Simulated Appliances</div>
+        </div>
+        <div class="device-grid" id="device-grid">
+          <!-- Loading state -->
+          <div class="loading-state">
+            <div class="loading-spinner"></div>
+            <div class="loading-text">Connecting to Firebase…</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Activity Log -->
+      <aside class="activity-panel">
+        <div class="activity-card">
+          <div class="activity-header">
+            <div class="activity-title">
+              📋 Activity Log
+              <span class="activity-count" id="activity-count">0</span>
+            </div>
+            <button class="clear-log-btn" id="clear-log-btn">Clear</button>
+          </div>
+          <div class="activity-log" id="activity-log">
+            <div class="activity-empty">
+              <div class="activity-empty-icon">📋</div>
+              <div>No activity yet</div>
+              <div style="font-size:0.75rem; margin-top:4px; color:var(--text-dim);">
+                Device state changes will appear here
+              </div>
+            </div>
+          </div>
+        </div>
+      </aside>
+
+    </div>
+  </div>
+
+  <!-- ── Firebase SDK (compat — v10 CDN) ── -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+
+  <!-- Application Logic -->
+  <script src="app.js"></script>
+</body>
+</html>
