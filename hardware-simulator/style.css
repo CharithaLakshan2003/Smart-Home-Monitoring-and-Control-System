@@ -1,8 +1,3 @@
-/* ============================================================
-   Hardware Simulator Dashboard — Styles
-   Dark glassmorphism theme with device-type color coding
-   ============================================================ */
-
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
 
 /* ── Design Tokens ── */
@@ -1142,4 +1137,88 @@ body::before {
   .floor-tab {
     flex-shrink: 0;
   }
+}
+
+/* ── Bootstrap Icons Overrides ── */
+.bi {
+  vertical-align: -0.125em;
+  line-height: 1;
+}
+
+/* Card device icon */
+.card-icon .bi {
+  font-size: 20px;
+}
+
+.device-card[data-type="OUTLET"] .card-icon .bi { color: var(--color-outlet); }
+.device-card[data-type="MULTI_SWITCH"] .card-icon .bi { color: var(--color-multi-switch); }
+.device-card[data-type="SAFETY_TIMED"] .card-icon .bi { color: var(--color-safety); }
+.device-card[data-type="SCHEDULED_LIGHT"] .card-icon .bi { color: var(--color-scheduled); }
+.device-card[data-type="CAMERA"] .card-icon .bi { color: var(--color-camera); }
+
+/* Header icon */
+.header-icon .bi {
+  font-size: 22px;
+  color: #fff;
+}
+
+/* Floor badge icon */
+.card-floor-badge .bi {
+  font-size: 0.6rem;
+  margin-right: 1px;
+}
+
+/* Action button icons */
+.action-btn .bi {
+  font-size: 0.72rem;
+  margin-right: 2px;
+}
+
+/* Activity log icons */
+.log-icon .bi {
+  font-size: 14px;
+}
+
+.log-icon.on .bi { color: var(--state-on); }
+.log-icon.off .bi { color: var(--text-muted); }
+.log-icon.error .bi { color: var(--state-error); }
+.log-icon.disconnected .bi { color: var(--state-disconnected); }
+.log-icon.switch .bi { color: var(--color-multi-switch); }
+
+/* Activity title icon */
+.activity-title .bi {
+  font-size: 1rem;
+  color: var(--text-secondary);
+}
+
+/* Empty state icons */
+.empty-state-icon .bi {
+  font-size: 3rem;
+}
+
+.activity-empty-icon .bi {
+  font-size: 2rem;
+}
+
+/* Camera feed icon */
+.camera-feed-icon .bi {
+  font-size: 2rem;
+  color: var(--color-camera);
+  opacity: 0.6;
+}
+
+/* Schedule panel icons */
+.schedule-times .bi {
+  font-size: 0.85rem;
+  margin-right: 2px;
+}
+
+.schedule-arrow .bi {
+  font-size: 0.75rem;
+}
+
+/* Auto-off badge icon */
+.auto-off-badge .bi {
+  font-size: 0.72rem;
+  margin-right: 2px;
 }

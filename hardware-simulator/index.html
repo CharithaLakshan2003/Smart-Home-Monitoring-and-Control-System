@@ -7,7 +7,10 @@
   <title>Hardware Simulator — Smart Home</title>
 
   <!-- Favicon -->
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏠</text></svg>">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%2393c5fd'><path d='M8.354 1.146a.5.5 0 0 0-.708 0l-6 6A.5.5 0 0 0 1.5 7.5v7a.5.5 0 0 0 .5.5h4.5a.5.5 0 0 0 .5-.5v-4h2v4a.5.5 0 0 0 .5.5H14a.5.5 0 0 0 .5-.5v-7a.5.5 0 0 0-.146-.354z'/></svg>">
+
+  <!-- Bootstrap Icons -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 
   <!-- Stylesheet -->
   <link rel="stylesheet" href="style.css">
@@ -18,7 +21,7 @@
     <!-- ── Header ── -->
     <header class="header">
       <div class="header-left">
-        <div class="header-icon">🏠</div>
+        <div class="header-icon"><i class="bi bi-house-fill"></i></div>
         <div>
           <h1 class="header-title">Hardware Simulator</h1>
           <p class="header-subtitle">Smart Home Monitoring & Control System</p>
@@ -69,14 +72,14 @@
         <div class="activity-card">
           <div class="activity-header">
             <div class="activity-title">
-              📋 Activity Log
+              <i class="bi bi-journal-text"></i> Activity Log
               <span class="activity-count" id="activity-count">0</span>
             </div>
             <button class="clear-log-btn" id="clear-log-btn">Clear</button>
           </div>
           <div class="activity-log" id="activity-log">
             <div class="activity-empty">
-              <div class="activity-empty-icon">📋</div>
+              <div class="activity-empty-icon"><i class="bi bi-journal-text"></i></div>
               <div>No activity yet</div>
               <div style="font-size:0.75rem; margin-top:4px; color:var(--text-dim);">
                 Device state changes will appear here

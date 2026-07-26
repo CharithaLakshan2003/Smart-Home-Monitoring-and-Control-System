@@ -1,9 +1,3 @@
-/* ============================================================
-   Hardware Simulator Dashboard — Application Logic
-   Firebase real-time listeners, device rendering, state control
-   ============================================================ */
-
-// ── Firebase Configuration ──
 // Using the same Firebase project as the mobile app
 const firebaseConfig = {
   apiKey: "AIzaSyDoTPNjXnYksZ9TqqpH4VOgddPe7iO1rw0",
@@ -26,13 +20,13 @@ const state = {
   timerIntervals: {},  // Track countdown intervals for safety-timed devices
 };
 
-// Device type icons
+// Device type icons (Bootstrap Icons)
 const DEVICE_ICONS = {
-  OUTLET: '🔌',
-  MULTI_SWITCH: '🔲',
-  SAFETY_TIMED: '♨️',
-  SCHEDULED_LIGHT: '💡',
-  CAMERA: '📷',
+  OUTLET: '<i class="bi bi-plug-fill"></i>',
+  MULTI_SWITCH: '<i class="bi bi-toggles"></i>',
+  SAFETY_TIMED: '<i class="bi bi-fire"></i>',
+  SCHEDULED_LIGHT: '<i class="bi bi-lightbulb-fill"></i>',
+  CAMERA: '<i class="bi bi-camera-video-fill"></i>',
 };
 
 // Device type display names
@@ -240,7 +234,7 @@ function renderDeviceGrid() {
   if (devices.length === 0) {
     dom.deviceGrid.innerHTML = `
       <div class="empty-state">
-        <div class="empty-state-icon">🏠</div>
+        <div class="empty-state-icon"><i class="bi bi-house-door"></i></div>
         <div class="empty-state-title">No devices found</div>
         <div class="empty-state-text">
           ${state.selectedFloorId
@@ -279,7 +273,7 @@ function renderDeviceGrid() {
 function renderDeviceCard(device) {
   const type = device.type || 'OUTLET';
   const deviceState = device.state || 'OFF';
-  const icon = DEVICE_ICONS[type] || '🔌';
+  const icon = DEVICE_ICONS[type] || '<i class="bi bi-plug-fill"></i>';
   const typeName = DEVICE_TYPE_NAMES[type] || type;
   const floor = state.floors[device.floorId];
   const floorName = floor ? floor.name : 'Unknown Floor';
@@ -317,7 +311,7 @@ function renderDeviceCard(device) {
           <div class="card-text">
             <div class="card-label">${escapeHtml(device.label || 'Unnamed Device')}</div>
             <div class="card-type">${typeName}</div>
-            <div class="card-floor-badge">📍 ${escapeHtml(floorName)}</div>
+            <div class="card-floor-badge"><i class="bi bi-geo-alt-fill"></i> ${escapeHtml(floorName)}</div>
           </div>
         </div>
         <span class="state-badge ${deviceState.toLowerCase()}">
@@ -332,14 +326,14 @@ function renderDeviceCard(device) {
 
       <div class="card-actions">
         <button class="action-btn danger" onclick="simulateState('${device.id}', 'ERROR')" title="Simulate Error">
-          ⚠ Error
+          <i class="bi bi-exclamation-triangle-fill"></i> Error
         </button>
         <button class="action-btn warning" onclick="simulateState('${device.id}', 'DISCONNECTED')" title="Simulate Disconnect">
-          ⊘ Disconnect
+          <i class="bi bi-wifi-off"></i> Disconnect
         </button>
         ${deviceState === 'ERROR' || deviceState === 'DISCONNECTED' ? `
           <button class="action-btn" onclick="simulateState('${device.id}', 'OFF')" title="Recover to OFF">
-            ↻ Recover
+            <i class="bi bi-arrow-counterclockwise"></i> Recover
           </button>
         ` : ''}
       </div>
@@ -434,7 +428,7 @@ function renderSafetyTimedBody(device, isOn, isDisabled) {
   } else if (autoOffTriggered) {
     timerHtml = `
       <div class="safety-timer">
-        <div class="auto-off-badge">⚠ Auto-off was triggered (safety cutoff)</div>
+        <div class="auto-off-badge"><i class="bi bi-exclamation-triangle-fill"></i> Auto-off was triggered (safety cutoff)</div>
         <div class="timer-row" style="margin-top: 8px;">
           <span class="timer-label">Max Duration</span>
           <span style="font-size: 0.78rem; color: var(--text-secondary); font-family: 'JetBrains Mono', monospace;">
@@ -485,9 +479,9 @@ function renderScheduledLightBody(device, isOn, isDisabled) {
     </div>
     <div class="schedule-panel">
       <div class="schedule-times">
-        <span>🕕 ${scheduleStart}</span>
-        <span class="schedule-arrow">→</span>
-        <span>🕚 ${scheduleEnd}</span>
+        <span><i class="bi bi-clock"></i> ${scheduleStart}</span>
+        <span class="schedule-arrow"><i class="bi bi-arrow-right"></i></span>
+        <span><i class="bi bi-clock-fill"></i> ${scheduleEnd}</span>
       </div>
       <div class="schedule-enabled">
         <span class="schedule-enabled-label">Schedule Active</span>
@@ -521,10 +515,10 @@ function renderCameraBody(device, isOn, isDisabled) {
                   style="width:100%;height:100%;object-fit:cover;border-radius:var(--radius-sm);"
                   onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
              <div style="display:none;flex-direction:column;align-items:center;gap:8px;">
-               <span class="camera-feed-icon">${isOn ? '📹' : '📷'}</span>
+               <span class="camera-feed-icon"><i class="bi ${isOn ? 'bi-camera-video-fill' : 'bi-camera-video-off'}"></i></span>
                <span class="camera-feed-text">${isOn ? 'Live Feed Active' : 'Camera Off'}</span>
              </div>`
-          : `<span class="camera-feed-icon">${isOn ? '📹' : '📷'}</span>
+          : `<span class="camera-feed-icon"><i class="bi ${isOn ? 'bi-camera-video-fill' : 'bi-camera-video-off'}"></i></span>
              <span class="camera-feed-text">${isOn ? 'Live Feed Active' : 'Camera Off'}</span>`
         }
       </div>
@@ -641,7 +635,7 @@ function renderActivityLog() {
   if (state.activityLog.length === 0) {
     logEl.innerHTML = `
       <div class="activity-empty">
-        <div class="activity-empty-icon">📋</div>
+        <div class="activity-empty-icon"><i class="bi bi-journal-text"></i></div>
         <div>No activity yet</div>
         <div style="font-size:0.75rem; margin-top:4px; color:var(--text-dim);">
           Device state changes will appear here
@@ -654,15 +648,15 @@ function renderActivityLog() {
   let html = '';
   state.activityLog.forEach((entry) => {
     const iconMap = {
-      on: '🟢',
-      off: '⚫',
-      error: '🔴',
-      disconnected: '🟡',
-      switch: '🔲',
+      on: '<i class="bi bi-check-circle-fill"></i>',
+      off: '<i class="bi bi-circle"></i>',
+      error: '<i class="bi bi-exclamation-circle-fill"></i>',
+      disconnected: '<i class="bi bi-wifi-off"></i>',
+      switch: '<i class="bi bi-toggles"></i>',
     };
     html += `
       <div class="log-entry">
-        <div class="log-icon ${entry.iconType}">${iconMap[entry.iconType] || '📝'}</div>
+        <div class="log-icon ${entry.iconType}">${iconMap[entry.iconType] || '<i class="bi bi-pencil-square"></i>'}</div>
         <div class="log-content">
           <div class="log-device">${escapeHtml(entry.deviceName)}</div>
           <div class="log-message">${escapeHtml(entry.message)}</div>
