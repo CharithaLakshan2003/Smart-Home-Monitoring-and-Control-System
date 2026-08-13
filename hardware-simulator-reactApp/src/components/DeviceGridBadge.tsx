@@ -1,5 +1,6 @@
 import type { Device, DeviceState } from '../types';
 import { getDeviceIcon } from '../utils/helpers';
+import { formatDuration } from '../utils/helpers';
 
 interface DeviceGridBadgeProps {
   device: Device;
@@ -33,22 +34,46 @@ export function DeviceGridBadge({ device, onClick }: DeviceGridBadgeProps) {
   const stateConfig = STATE_COLORS[device.state] || STATE_COLORS.OFF;
   const Icon = getDeviceIcon(device.type);
 
+  let iconColor = stateConfig.iconColor;
+  if (device.type === 'SAFETY_TIMED') {
+    iconColor = device.state === 'ON' ? '#f97316' : '#64748b';
+  }
+
+  const isSafetyTimed = device.type === 'SAFETY_TIMED';
+  const turnedOnAt = device.turnedOnAt || 0;
+  const maxDuration = device.maxOnDurationSec || 1800;
+  const autoOffTriggered = device.autoOffTriggered || false;
+  let remainingText = '';
+
+  if (isSafetyTimed && turnedOnAt > 0 && !autoOffTriggered) {
+    const elapsed = Math.floor((Date.now() - turnedOnAt) / 1000);
+    const rem = Math.max(0, maxDuration - elapsed);
+    remainingText = rem > 0 ? `Rem: ${formatDuration(rem)}` : 'Auto-off';
+  }
+
   return (
-    <button
-      onClick={onClick}
-      title={`${device.label} — ${device.type} (${device.state})`}
-      className={`
-        w-11 h-11 rounded-full flex items-center justify-center cursor-pointer
-        transition-all duration-300 hover:scale-110
-        ${device.state === 'ERROR' ? 'animate-[pulse-dot_1s_infinite]' : ''}
-      `}
-      style={{
-        background: '#1e293b',
-        border: `2px solid ${stateConfig.border}`,
-        boxShadow: stateConfig.glow,
-      }}
+    <div
+      className="flex flex-col items-center gap-1.5 w-full pt-1"
     >
-      <Icon size={20} color={stateConfig.iconColor} />
-    </button>
+      <button
+        onClick={onClick}
+        title={`${device.label} — ${device.type} (${device.state})`}
+        className={`
+          w-11 h-11 rounded-full flex items-center justify-center cursor-pointer
+          transition-all duration-300 hover:scale-110
+          ${device.state === 'ERROR' ? 'animate-[pulse-dot_1s_infinite]' : ''}
+        `}
+        style={{
+          background: '#1e293b',
+          border: `2px solid ${stateConfig.border}`,
+          boxShadow: stateConfig.glow,
+        }}
+      >
+        <Icon size={20} color={iconColor} />
+      </button>
+      {remainingText && (
+        <span className="text-[0.65rem] text-[var(--text-muted)] capitalize">{remainingText}</span>
+      )}
+    </div>
   );
 }

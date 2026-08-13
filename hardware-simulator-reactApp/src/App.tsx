@@ -28,15 +28,15 @@ function App() {
       />
 
       {/* Main Layout Area */}
-      <main className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden pl-5">
+      <main className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden">
         {/* Global Header */}
         <Header devices={devices} isConnected={isConnected} />
 
         {/* Canvas */}
-        <div className="flex-1 overflow-y-auto px-8 pb-12 flex gap-8 max-xl:flex-col relative">
+        <div className="flex-1 overflow-y-auto px-14 pb-20 pt-8 flex gap-14 max-xl:flex-col relative">
           
           {/* Main Grid Area */}
-          <div className="flex-1 min-w-0 flex flex-col gap-8">
+          <div className="flex-1 min-w-0 flex flex-col gap-10">
             <DeviceGrid
               devices={devices}
               floors={floors}
@@ -46,7 +46,7 @@ function App() {
           </div>
 
           {/* Activity Sidebar */}
-          <div className="w-[380px] shrink-0 max-xl:w-full">
+          <div className="w-[400px] shrink-0 max-xl:w-full">
             <ActivityLog log={activityLog} onClear={clearLog} />
           </div>
 

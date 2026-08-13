@@ -42,6 +42,8 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
@@ -56,6 +58,7 @@ import androidx.compose.ui.unit.dp
 import com.example.smarthomemonitoringcontrolsystem.data.model.Device
 import com.example.smarthomemonitoringcontrolsystem.data.model.DeviceState
 import com.example.smarthomemonitoringcontrolsystem.data.model.DeviceType
+import com.example.smarthomemonitoringcontrolsystem.ui.components.DeviceIcon
 import com.example.smarthomemonitoringcontrolsystem.ui.components.getDeviceIcon
 import com.example.smarthomemonitoringcontrolsystem.ui.viewmodel.DeviceViewModel
 
@@ -68,11 +71,17 @@ fun AddDeviceScreen(
     deviceViewModel: DeviceViewModel,
     onNavigateBack: () -> Unit
 ) {
+    val uiState by deviceViewModel.uiState.collectAsState()
+
     var deviceLabel by remember { mutableStateOf("") }
     var selectedType by remember { mutableStateOf(DeviceType.OUTLET) }
     var dropdownExpanded by remember { mutableStateOf(false) }
     var selectedGridX by remember { mutableIntStateOf(-1) }
     var selectedGridY by remember { mutableIntStateOf(-1) }
+
+    LaunchedEffect(floorId) {
+        deviceViewModel.loadDevices(floorId)
+    }
 
     // Multi-Switch fields
     var switchCount by remember { mutableIntStateOf(2) }
@@ -219,6 +228,10 @@ fun AddDeviceScreen(
                         ) {
                             repeat(gridCols) { col ->
                                 val isSelected = selectedGridX == col && selectedGridY == row
+                                // Find if any device exists here
+                                val existingDevice = uiState.devices.find { it.gridX == col && it.gridY == row }
+                                val hasMultiple = uiState.devices.count { it.gridX == col && it.gridY == row } > 1
+
                                 Box(
                                     modifier = Modifier
                                         .weight(1f)
@@ -227,6 +240,7 @@ fun AddDeviceScreen(
                                         .clip(RoundedCornerShape(4.dp))
                                         .background(
                                             if (isSelected) MaterialTheme.colorScheme.primary.copy(alpha = 0.3f)
+                                            else if (existingDevice != null) MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.8f)
                                             else MaterialTheme.colorScheme.surface.copy(alpha = 0.3f)
                                         )
                                         .border(
@@ -248,6 +262,21 @@ fun AddDeviceScreen(
                                             tint = MaterialTheme.colorScheme.primary,
                                             modifier = Modifier.size(16.dp)
                                         )
+                                    } else if (existingDevice != null) {
+                                        DeviceIcon(
+                                            type = existingDevice.type,
+                                            state = existingDevice.state,
+                                            modifier = Modifier.size(14.dp)
+                                        )
+                                        if (hasMultiple) {
+                                            Box(
+                                                modifier = Modifier
+                                                    .align(Alignment.BottomEnd)
+                                                    .size(8.dp)
+                                                    .clip(CircleShape)
+                                                    .background(MaterialTheme.colorScheme.secondary)
+                                            )
+                                        }
                                     }
                                 }
                             }

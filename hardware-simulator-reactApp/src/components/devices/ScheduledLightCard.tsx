@@ -17,8 +17,8 @@ export function ScheduledLightCard({ device, isOn, isDisabled }: ScheduledLightC
   return (
     <>
       {/* Power toggle */}
-      <div className="flex items-center gap-3 mt-4">
-        <span className="text-[0.8rem] text-[var(--text-secondary)] font-medium">Power</span>
+      <div className="flex items-center gap-5 mt-8">
+        <span className="text-[1rem] text-[var(--text-secondary)] font-medium w-28">Power</span>
         <ToggleSwitch
           checked={isOn}
           disabled={isDisabled}
@@ -28,26 +28,26 @@ export function ScheduledLightCard({ device, isOn, isDisabled }: ScheduledLightC
 
       {/* Schedule panel */}
       <div
-        className="mt-4 p-3 rounded-lg"
+        className="mt-6 p-5 rounded-xl"
         style={{
           background: 'rgba(234, 179, 8, 0.08)',
           border: '1px solid rgba(234, 179, 8, 0.15)',
         }}
       >
-        <div className="flex items-center gap-3 font-mono text-[0.9rem] text-[#eab308] font-medium">
-          <span className="flex items-center gap-1">
-            <Clock size={14} /> {scheduleStart}
+        <div className="flex items-center gap-4 font-mono text-[1rem] text-[#eab308] font-medium">
+          <span className="flex items-center gap-2">
+            <Clock size={16} /> {scheduleStart}
           </span>
           <span className="text-[var(--text-muted)]">
-            <ArrowRight size={14} />
+            <ArrowRight size={16} />
           </span>
-          <span className="flex items-center gap-1">
-            <Clock size={14} /> {scheduleEnd}
+          <span className="flex items-center gap-2">
+            <Clock size={16} /> {scheduleEnd}
           </span>
         </div>
 
-        <div className="flex items-center justify-between mt-2">
-          <span className="text-[0.75rem] text-[var(--text-muted)] font-medium">Schedule Active</span>
+        <div className="flex items-center justify-between mt-4">
+          <span className="text-[0.85rem] text-[var(--text-muted)] font-medium">Schedule Active</span>
           <ToggleSwitch
             checked={scheduleEnabled}
             disabled={isDisabled}

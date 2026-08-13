@@ -35,8 +35,8 @@ export const DeviceCard = forwardRef<HTMLDivElement, DeviceCardProps>(({ device,
 
   // Obsidian Glass Styling
   const cardClasses = `
-    p-6 flex flex-col gap-6 relative overflow-hidden transition-all duration-500 ease-out
-    rounded-[24px] border
+    p-10 flex flex-col gap-6 relative overflow-hidden transition-all duration-500 ease-out
+    rounded-[28px] border
     ${isOn ? 'bg-[var(--bg-card)]' : 'bg-[var(--bg-card)] opacity-90 grayscale-[20%]'}
   `;
 
@@ -65,32 +65,32 @@ export const DeviceCard = forwardRef<HTMLDivElement, DeviceCardProps>(({ device,
 
   return (
     <div ref={ref} data-device-id={device.id} className={cardClasses} style={dynamicStyles}>
-      
+
       {/* Background ambient glow when ON */}
       {isOn && (
-        <div 
+        <div
           className="absolute -top-20 -right-20 w-40 h-40 rounded-full blur-[60px] opacity-40 pointer-events-none transition-opacity duration-1000"
-          style={{ background: colors.accent }} 
+          style={{ background: colors.accent }}
         />
       )}
 
       {/* Header */}
       <div className="flex items-start justify-between relative z-10">
-        <div className="flex items-center gap-4">
-          <div 
-            className="w-14 h-14 rounded-[18px] flex items-center justify-center transition-all duration-500 shadow-inner"
-            style={{ 
+        <div className="flex items-center gap-5">
+          <div
+            className="w-16 h-16 rounded-[20px] flex items-center justify-center transition-all duration-500 shadow-inner"
+            style={{
               background: isOn ? colors.accent : 'rgba(255,255,255,0.03)',
               color: isOn ? '#fff' : 'var(--text-secondary)'
             }}
           >
-            <Icon size={26} strokeWidth={isOn ? 2.5 : 2} />
+            <Icon size={28} strokeWidth={isOn ? 2.5 : 2} />
           </div>
           <div>
-            <h3 className="text-[1.05rem] font-bold text-white tracking-wide leading-tight">
+            <h3 className="text-[1.15rem] font-bold text-white tracking-wide leading-tight">
               {device.label || 'Unnamed Device'}
             </h3>
-            <p className="text-[0.75rem] text-[var(--text-muted)] font-medium mt-1 uppercase tracking-wider">
+            <p className="text-[0.8rem] text-[var(--text-muted)] font-medium mt-1.5 uppercase tracking-wider">
               {typeName}
             </p>
           </div>
@@ -99,31 +99,31 @@ export const DeviceCard = forwardRef<HTMLDivElement, DeviceCardProps>(({ device,
       </div>
 
       {/* Location Badge */}
-      <div className="flex items-center gap-1.5 self-start px-3 py-1.5 rounded-lg bg-white/5 border border-white/5 text-[0.7rem] text-[var(--text-secondary)] font-medium mt-1 relative z-10">
-        <MapPin size={12} /> {floorName}
+      <div className="flex items-center gap-2.5 self-start px-5 py-2.5 rounded-xl bg-white/5 border border-white/5 text-[0.8rem] text-[var(--text-secondary)] font-medium mt-3 relative z-10">
+        <MapPin size={14} /> {floorName}
       </div>
 
       {/* Controls Area */}
-      <div className="flex-1 flex flex-col justify-center relative z-10 py-4">
+      <div className="flex-1 flex flex-col justify-center relative z-10 py-6">
         {renderBody()}
       </div>
 
       {/* Admin Actions Footer */}
-      <div className="pt-4 border-t border-[var(--border-subtle)] flex items-center justify-between relative z-10">
-        <span className="text-[0.65rem] text-[var(--text-dim)] font-mono">
-          ID: {device.id.substring(0,8)}
+      <div className="pt-6 mt-4 border-t border-[var(--border-subtle)] flex items-center justify-between relative z-10">
+        <span className="text-[0.7rem] text-[var(--text-dim)] font-mono">
+          ID: {device.id.substring(0, 8)}
         </span>
-        <div className="flex gap-1.5">
+        <div className="flex gap-3">
           <button
             onClick={() => simulateState(device.id, 'ERROR')}
-            className="p-2 rounded-lg bg-red-500/10 text-red-400 hover:bg-red-500/20 hover:text-red-300 transition-colors"
+            className="p-3 rounded-xl bg-red-500/10 text-red-400 hover:bg-red-500/20 hover:text-red-300 transition-colors"
             title="Trigger Error State"
           >
             <AlertTriangle size={14} />
           </button>
           <button
             onClick={() => simulateState(device.id, 'DISCONNECTED')}
-            className="p-2 rounded-lg bg-orange-500/10 text-orange-400 hover:bg-orange-500/20 hover:text-orange-300 transition-colors"
+            className="p-3 rounded-xl bg-orange-500/10 text-orange-400 hover:bg-orange-500/20 hover:text-orange-300 transition-colors"
             title="Trigger Disconnected State"
           >
             <WifiOff size={14} />
@@ -131,9 +131,9 @@ export const DeviceCard = forwardRef<HTMLDivElement, DeviceCardProps>(({ device,
           {(deviceState === 'ERROR' || deviceState === 'DISCONNECTED') && (
             <button
               onClick={() => simulateState(device.id, 'OFF')}
-              className="px-3 py-1.5 rounded-lg bg-white/10 text-white hover:bg-white/20 text-[0.75rem] font-bold flex items-center gap-1.5 transition-colors"
+              className="px-4 py-2 rounded-xl bg-white/10 text-white hover:bg-white/20 text-[0.8rem] font-bold flex items-center gap-2 transition-colors"
             >
-              <RotateCcw size={12} /> RECOVER
+              <RotateCcw size={14} /> RECOVER
             </button>
           )}
         </div>

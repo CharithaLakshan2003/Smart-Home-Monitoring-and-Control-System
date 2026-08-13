@@ -52,8 +52,8 @@ export function SafetyTimedCard({ device, isOn, isDisabled }: SafetyTimedCardPro
   return (
     <>
       {/* Power toggle */}
-      <div className="flex items-center gap-3 mt-4">
-        <span className="text-[0.8rem] text-[var(--text-secondary)] font-medium">Power</span>
+      <div className="flex items-center gap-5 mt-8">
+        <span className="text-[1rem] text-[var(--text-secondary)] font-medium w-28">Power</span>
         <ToggleSwitch
           checked={isOn}
           disabled={isDisabled}
@@ -63,7 +63,7 @@ export function SafetyTimedCard({ device, isOn, isDisabled }: SafetyTimedCardPro
 
       {/* Timer section */}
       <div
-        className="mt-4 p-3 rounded-lg"
+        className="mt-6 p-5 rounded-xl"
         style={{
           background: 'rgba(249, 115, 22, 0.08)',
           border: '1px solid rgba(249, 115, 22, 0.15)',
@@ -72,17 +72,17 @@ export function SafetyTimedCard({ device, isOn, isDisabled }: SafetyTimedCardPro
         {isOn && turnedOnAt > 0 ? (
           <>
             <div className="flex items-center justify-between">
-              <span className="text-[0.75rem] text-[var(--text-muted)] uppercase tracking-wide font-semibold">
+              <span className="text-[0.85rem] text-[var(--text-muted)] uppercase tracking-wide font-semibold">
                 Time Remaining
               </span>
               <span
-                className={`font-mono text-lg font-semibold ${isCritical ? 'text-[var(--color-state-error)] animate-[pulse-text_1s_infinite]' : 'text-[#f97316]'}`}
+                className={`font-mono text-xl font-semibold ${isCritical ? 'text-[var(--color-state-error)] animate-[pulse-text_1s_infinite]' : 'text-[#f97316]'}`}
               >
                 {formatDuration(remaining)}
               </span>
             </div>
             {/* Progress bar */}
-            <div className="mt-2 h-1 rounded-sm overflow-hidden" style={{ background: 'rgba(249, 115, 22, 0.15)' }}>
+            <div className="mt-3 h-1.5 rounded-sm overflow-hidden" style={{ background: 'rgba(249, 115, 22, 0.15)' }}>
               <div
                 className="h-full rounded-sm transition-[width] duration-1000 linear"
                 style={{
@@ -91,37 +91,37 @@ export function SafetyTimedCard({ device, isOn, isDisabled }: SafetyTimedCardPro
                 }}
               />
             </div>
-            <div className="flex items-center justify-between mt-1.5">
-              <span className="text-[0.75rem] text-[var(--text-muted)] uppercase tracking-wide font-semibold">
+            <div className="flex items-center justify-between mt-3">
+              <span className="text-[0.85rem] text-[var(--text-muted)] uppercase tracking-wide font-semibold">
                 Max Duration
               </span>
-              <span className="text-[0.78rem] text-[var(--text-secondary)] font-mono">
+              <span className="text-[0.9rem] text-[var(--text-secondary)] font-mono">
                 {formatDuration(maxDuration)}
               </span>
             </div>
           </>
         ) : autoOffTriggered ? (
           <>
-            <div className="mt-2 inline-flex items-center gap-1 px-3 py-1 rounded-xl text-[0.72rem] font-semibold"
+            <div className="mt-3 inline-flex items-center gap-2 px-4 py-2 rounded-xl text-[0.85rem] font-semibold"
               style={{ background: 'rgba(239, 68, 68, 0.15)', color: '#f87171' }}
             >
-              <AlertTriangle size={12} /> Auto-off was triggered (safety cutoff)
+              <AlertTriangle size={16} /> Auto-off was triggered (safety cutoff)
             </div>
-            <div className="flex items-center justify-between mt-2">
-              <span className="text-[0.75rem] text-[var(--text-muted)] uppercase tracking-wide font-semibold">
+            <div className="flex items-center justify-between mt-4">
+              <span className="text-[0.85rem] text-[var(--text-muted)] uppercase tracking-wide font-semibold">
                 Max Duration
               </span>
-              <span className="text-[0.78rem] text-[var(--text-secondary)] font-mono">
+              <span className="text-[0.9rem] text-[var(--text-secondary)] font-mono">
                 {formatDuration(maxDuration)}
               </span>
             </div>
           </>
         ) : (
           <div className="flex items-center justify-between">
-            <span className="text-[0.75rem] text-[var(--text-muted)] uppercase tracking-wide font-semibold">
+            <span className="text-[0.85rem] text-[var(--text-muted)] uppercase tracking-wide font-semibold">
               Max Duration
             </span>
-            <span className="text-[0.78rem] text-[var(--text-secondary)] font-mono">
+            <span className="text-[0.9rem] text-[var(--text-secondary)] font-mono">
               {formatDuration(maxDuration)}
             </span>
           </div>

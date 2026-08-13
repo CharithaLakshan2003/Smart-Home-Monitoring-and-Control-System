@@ -16,8 +16,8 @@ export function CameraCard({ device, isOn, isDisabled }: CameraCardProps) {
   return (
     <>
       {/* Camera feed toggle */}
-      <div className="flex items-center gap-3 mt-4">
-        <span className="text-[0.8rem] text-[var(--text-secondary)] font-medium">Camera Feed</span>
+      <div className="flex items-center gap-5 mt-8">
+        <span className="text-[1rem] text-[var(--text-secondary)] font-medium w-32">Camera Feed</span>
         <ToggleSwitch
           checked={isOn}
           disabled={isDisabled}
@@ -26,9 +26,9 @@ export function CameraCard({ device, isOn, isDisabled }: CameraCardProps) {
       </div>
 
       {/* Camera preview */}
-      <div className="mt-4">
+      <div className="mt-6">
         <div
-          className={`w-full aspect-video rounded-lg flex flex-col items-center justify-center gap-2 overflow-hidden relative ${
+          className={`w-full aspect-video rounded-xl flex flex-col items-center justify-center gap-3 overflow-hidden relative ${
             isOn ? 'border-[rgba(20,184,166,0.3)]' : ''
           }`}
           style={{
@@ -65,12 +65,12 @@ export function CameraCard({ device, isOn, isDisabled }: CameraCardProps) {
         </div>
 
         {streamUrl && (
-          <div className="mt-2 font-mono text-[0.7rem] text-[var(--text-dim)] break-all px-3 py-2 rounded-md bg-white/[0.03]">
+          <div className="mt-3 font-mono text-[0.8rem] text-[var(--text-dim)] break-all px-4 py-3 rounded-lg bg-white/[0.03]">
             Stream: {streamUrl}
           </div>
         )}
         {snapshotUrl && (
-          <div className="mt-2 font-mono text-[0.7rem] text-[var(--text-dim)] break-all px-3 py-2 rounded-md bg-white/[0.03]">
+          <div className="mt-3 font-mono text-[0.8rem] text-[var(--text-dim)] break-all px-4 py-3 rounded-lg bg-white/[0.03]">
             Snapshot: {snapshotUrl}
           </div>
         )}

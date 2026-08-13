@@ -16,48 +16,48 @@ const LOG_ICONS: Record<LogIconType, { icon: React.ReactNode; bg: string; color:
 
 export function ActivityLog({ log, onClear }: ActivityLogProps) {
   return (
-    <aside className="h-full flex flex-col bg-[var(--bg-card)] rounded-[24px] border border-[var(--border-subtle)] overflow-hidden">
-      
+    <aside className="h-full flex flex-col bg-[var(--bg-card)] rounded-[28px] border border-[var(--border-subtle)] overflow-hidden">
+
       {/* Header */}
-      <div className="px-6 py-5 border-b border-[var(--border-subtle)] flex items-center justify-between bg-white/[0.01]">
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-full bg-blue-500/10 flex items-center justify-center">
-            <BookText size={16} className="text-blue-400" />
+      <div className="px-10 py-8 border-b border-[var(--border-subtle)] flex items-center justify-between bg-white/[0.01]">
+        <div className="flex items-center gap-4">
+          <div className="w-11 h-11 rounded-full bg-blue-500/10 flex items-center justify-center">
+            <BookText size={18} className="text-blue-400" />
           </div>
           <div>
-            <h2 className="text-[1rem] font-bold text-white leading-tight">System Log</h2>
-            <div className="text-[0.7rem] text-[var(--text-muted)] font-medium">Real-time Events</div>
+            <h2 className="text-[1.1rem] font-bold text-white leading-tight">System Log</h2>
+            <div className="text-[0.75rem] text-[var(--text-muted)] font-medium mt-0.5">Real-time Events</div>
           </div>
         </div>
-        
+
         <button
           onClick={onClear}
-          className="px-3 py-1.5 rounded-lg border border-[var(--border-glass)] text-[0.75rem] font-bold text-[var(--text-secondary)] hover:bg-white/5 transition-colors"
+          className="px-4 py-2 rounded-xl border border-[var(--border-glass)] text-[0.8rem] font-bold text-[var(--text-secondary)] hover:bg-white/5 transition-colors"
         >
           CLEAR
         </button>
       </div>
 
       {/* Entries */}
-      <div className="flex-1 overflow-y-auto p-4 custom-scrollbar">
+      <div className="flex-1 overflow-y-auto p-8 custom-scrollbar">
         {log.length === 0 ? (
           <div className="h-full flex flex-col items-center justify-center opacity-40">
             <BookText size={48} className="mb-4 text-[var(--text-muted)]" />
             <span className="text-[0.9rem] font-medium text-[var(--text-secondary)]">No recent activity</span>
           </div>
         ) : (
-          <div className="flex flex-col gap-3">
+          <div className="flex flex-col gap-5">
             {log.map((entry, idx) => {
               const iconConfig = LOG_ICONS[entry.iconType] || LOG_ICONS.off;
 
               return (
                 <div
                   key={idx}
-                  className="flex gap-4 p-4 rounded-[16px] bg-white/[0.02] border border-[var(--border-subtle)] transition-all hover:bg-white/[0.04] animate-slide-in"
+                  className="flex gap-5 p-6 rounded-[20px] bg-white/[0.02] border border-[var(--border-subtle)] transition-all hover:bg-white/[0.04] animate-slide-in"
                   style={{ animationDelay: `${idx * 0.05}s` }}
                 >
                   <div
-                    className="w-10 h-10 rounded-[12px] flex items-center justify-center shrink-0 shadow-inner"
+                    className="w-12 h-12 rounded-[14px] flex items-center justify-center shrink-0 shadow-inner"
                     style={{ background: iconConfig.bg, color: iconConfig.color }}
                   >
                     {iconConfig.icon}

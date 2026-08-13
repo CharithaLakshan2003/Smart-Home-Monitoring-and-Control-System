@@ -3,6 +3,7 @@ package com.example.smarthomemonitoringcontrolsystem.ui.screens
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -15,6 +16,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.rememberScrollState
@@ -23,6 +26,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.FilterList
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.AssistChipDefaults
 import androidx.compose.material3.Card
@@ -33,6 +37,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
@@ -48,11 +53,15 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.example.smarthomemonitoringcontrolsystem.data.model.Device
 import com.example.smarthomemonitoringcontrolsystem.data.model.DeviceState
+import com.example.smarthomemonitoringcontrolsystem.data.model.DeviceType
 import com.example.smarthomemonitoringcontrolsystem.ui.components.DeviceGridBadge
+import com.example.smarthomemonitoringcontrolsystem.ui.components.DeviceIcon
 import com.example.smarthomemonitoringcontrolsystem.ui.components.EmptyState
 import com.example.smarthomemonitoringcontrolsystem.ui.components.LoadingOverlay
+import com.example.smarthomemonitoringcontrolsystem.ui.components.StatusChip
 import com.example.smarthomemonitoringcontrolsystem.ui.theme.DeviceDisconnected
 import com.example.smarthomemonitoringcontrolsystem.ui.theme.DeviceError
 import com.example.smarthomemonitoringcontrolsystem.ui.theme.DeviceOff
@@ -73,6 +82,9 @@ fun FloorDashboardScreen(
 ) {
     val uiState by deviceViewModel.uiState.collectAsState()
     var selectedFilter by remember { mutableStateOf("All") }
+    
+    // State for multiple device selection
+    var devicesToPick by remember { mutableStateOf<List<Device>?>(null) }
 
     LaunchedEffect(floorId) {
         deviceViewModel.loadDevices(floorId)
@@ -204,13 +216,20 @@ fun FloorDashboardScreen(
                                             ),
                                         contentAlignment = Alignment.Center
                                     ) {
-                                        // Find device at this grid position
-                                        val device = filteredDevices.find { it.gridX == col && it.gridY == row }
-                                        if (device != null) {
-                                            DeviceGridBadge(
-                                                device = device,
-                                                onClick = { onDeviceClick(device.id) }
-                                            )
+                                        // Find devices at this grid position
+                                        val devicesAtPos = filteredDevices.filter { it.gridX == col && it.gridY == row }
+                                        if (devicesAtPos.isNotEmpty()) {
+                                            if (devicesAtPos.size == 1) {
+                                                DeviceGridBadge(
+                                                    device = devicesAtPos[0],
+                                                    onClick = { onDeviceClick(devicesAtPos[0].id) }
+                                                )
+                                            } else {
+                                                DeviceCellCluster(
+                                                    devices = devicesAtPos,
+                                                    onClick = { devicesToPick = devicesAtPos }
+                                                )
+                                            }
                                         }
                                     }
                                 }
@@ -221,16 +240,40 @@ fun FloorDashboardScreen(
 
                 // Legend
                 Spacer(modifier = Modifier.height(8.dp))
-                Row(
+                Column(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 24.dp),
-                    horizontalArrangement = Arrangement.SpaceEvenly
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    LegendItem(color = DeviceOn, label = "ON")
-                    LegendItem(color = DeviceOff, label = "OFF")
-                    LegendItem(color = DeviceError, label = "Error")
-                    LegendItem(color = DeviceDisconnected, label = "Disconnected")
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceEvenly
+                    ) {
+                        LegendItem(color = DeviceOn, label = "ON")
+                        LegendItem(color = DeviceOff, label = "OFF")
+                        LegendItem(color = DeviceError, label = "Error")
+                        LegendItem(color = DeviceDisconnected, label = "Disconnected")
+                    }
+                    
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.Center,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = com.example.smarthomemonitoringcontrolsystem.ui.components.getDeviceIcon(com.example.smarthomemonitoringcontrolsystem.data.model.DeviceType.SAFETY_TIMED),
+                            contentDescription = null,
+                            modifier = Modifier.size(14.dp),
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(
+                            text = "Safety-Timed Device",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
                 }
 
                 Spacer(modifier = Modifier.height(24.dp))
@@ -264,6 +307,89 @@ fun FloorDashboardScreen(
             contentColor = MaterialTheme.colorScheme.onPrimary
         ) {
             Icon(Icons.Filled.Add, contentDescription = "Add Device")
+        }
+    }
+
+    // Pick Device Dialog
+    devicesToPick?.let { devices ->
+        AlertDialog(
+            onDismissRequest = { devicesToPick = null },
+            title = { Text("Select Device") },
+            text = {
+                LazyColumn(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    items(devices) { device ->
+                        DeviceListItem(
+                            device = device,
+                            onClick = {
+                                devicesToPick = null
+                                onDeviceClick(device.id)
+                            }
+                        )
+                    }
+                }
+            },
+            confirmButton = {},
+            dismissButton = {
+                TextButton(onClick = { devicesToPick = null }) {
+                    Text("Close")
+                }
+            }
+        )
+    }
+}
+
+@Composable
+fun DeviceCellCluster(
+    devices: List<Device>,
+    onClick: () -> Unit
+) {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .clickable(onClick = onClick)
+            .padding(2.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        // Show a 2x2 grid of mini icons
+        Column(
+            verticalArrangement = Arrangement.spacedBy(2.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Row(horizontalArrangement = Arrangement.spacedBy(2.dp)) {
+                DeviceGridBadge(device = devices[0], onClick = onClick, size = 18.dp)
+                if (devices.size > 1) {
+                    DeviceGridBadge(device = devices[1], onClick = onClick, size = 18.dp)
+                }
+            }
+            if (devices.size > 2) {
+                Row(horizontalArrangement = Arrangement.spacedBy(2.dp)) {
+                    DeviceGridBadge(device = devices[2], onClick = onClick, size = 18.dp)
+                    if (devices.size > 3) {
+                        if (devices.size == 4) {
+                            DeviceGridBadge(device = devices[3], onClick = onClick, size = 18.dp)
+                        } else {
+                            // Show count for more than 4
+                            Box(
+                                modifier = Modifier
+                                    .size(18.dp)
+                                    .clip(CircleShape)
+                                    .background(MaterialTheme.colorScheme.secondary),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    text = "+${devices.size - 3}",
+                                    style = MaterialTheme.typography.labelSmall,
+                                    fontSize = 8.sp,
+                                    color = Color.White
+                                )
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 }
@@ -309,7 +435,7 @@ private fun DeviceListItem(
                 .padding(12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            com.example.smarthomemonitoringcontrolsystem.ui.components.DeviceIcon(
+            DeviceIcon(
                 type = device.type,
                 state = device.state,
                 modifier = Modifier.size(28.dp)
@@ -328,7 +454,7 @@ private fun DeviceListItem(
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
-            com.example.smarthomemonitoringcontrolsystem.ui.components.StatusChip(
+            StatusChip(
                 state = device.state
             )
         }

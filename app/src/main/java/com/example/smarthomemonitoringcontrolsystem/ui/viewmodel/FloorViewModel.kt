@@ -43,11 +43,18 @@ class FloorViewModel : ViewModel() {
     }
 
     private fun loadFloors(userId: String): Job = viewModelScope.launch {
-        _uiState.value = _uiState.value.copy(isLoading = true)
-        repository.getFloors(userId).collect { floors ->
-            _uiState.value = FloorUiState(
-                floors = floors,
-                isLoading = false
+        try {
+            _uiState.value = _uiState.value.copy(isLoading = true)
+            repository.getFloors(userId).collect { floors ->
+                _uiState.value = FloorUiState(
+                    floors = floors,
+                    isLoading = false
+                )
+            }
+        } catch (e: Exception) {
+            _uiState.value = _uiState.value.copy(
+                isLoading = false,
+                error = e.message ?: "Failed to load floors"
             )
         }
     }

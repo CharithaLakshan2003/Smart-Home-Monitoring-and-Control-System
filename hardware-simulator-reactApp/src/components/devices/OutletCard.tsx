@@ -10,8 +10,8 @@ interface OutletCardProps {
 
 export function OutletCard({ device, isOn, isDisabled }: OutletCardProps) {
   return (
-    <div className="flex items-center gap-3 mt-4">
-      <span className="text-[0.8rem] text-[var(--text-secondary)] font-medium">Power</span>
+    <div className="flex items-center gap-5 mt-8">
+      <span className="text-[1rem] text-[var(--text-secondary)] font-medium w-28">Power</span>
       <ToggleSwitch
         checked={isOn}
         disabled={isDisabled}

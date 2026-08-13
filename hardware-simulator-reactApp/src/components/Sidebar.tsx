@@ -16,8 +16,8 @@ export function Sidebar({ floors, devices, selectedFloorId, onSelectFloor }: Sid
 
   return (
     <aside 
-      className={`h-full shrink-0 border-r border-[var(--border-glass)] bg-[var(--bg-sidebar)] flex flex-col pt-10 pb-6 hidden md:flex transition-all duration-300 relative ${
-        isMinimized ? 'w-[100px]' : 'w-[300px]'
+      className={`h-full shrink-0 border-r border-[var(--border-glass)] bg-[var(--bg-sidebar)] flex flex-col pt-14 pb-12 hidden md:flex transition-all duration-300 relative ${
+        isMinimized ? 'w-[100px]' : 'w-[340px]'
       }`}
     >
       
@@ -30,9 +30,9 @@ export function Sidebar({ floors, devices, selectedFloorId, onSelectFloor }: Sid
       </button>
 
       {/* Brand */}
-      <div className={`mb-14 flex items-center gap-5 transition-all duration-300 ${isMinimized ? 'px-6' : 'px-10'}`}>
-        <div className="w-12 h-12 rounded-[16px] flex items-center justify-center bg-gradient-to-br from-blue-500 to-purple-600 shadow-[0_0_24px_rgba(59,130,246,0.4)] shrink-0">
-          <Home size={24} color="#fff" />
+      <div className={`mb-20 flex items-center gap-6 transition-all duration-300 ${isMinimized ? 'px-7' : 'px-14'}`}>
+        <div className="w-14 h-14 rounded-[18px] flex items-center justify-center bg-gradient-to-br from-blue-500 to-purple-600 shadow-[0_0_24px_rgba(59,130,246,0.4)] shrink-0">
+          <Home size={26} color="#fff" />
         </div>
         {!isMinimized && (
           <div className="whitespace-nowrap overflow-hidden">
@@ -46,18 +46,18 @@ export function Sidebar({ floors, devices, selectedFloorId, onSelectFloor }: Sid
         )}
       </div>
 
-      <div className={`flex-1 overflow-y-auto ${isMinimized ? 'px-4' : 'px-6'}`}>
+      <div className={`flex-1 overflow-y-auto ${isMinimized ? 'px-5' : 'px-10'}`}>
         {!isMinimized && (
-          <div className="text-[0.75rem] font-bold text-[var(--text-dim)] uppercase tracking-wider mb-4 px-4 whitespace-nowrap">
+          <div className="text-[0.75rem] font-bold text-[var(--text-dim)] uppercase tracking-wider mb-8 px-6 whitespace-nowrap">
             Spaces
           </div>
         )}
 
-        <nav className="flex flex-col gap-2">
+        <nav className="flex flex-col gap-4">
           {/* All Floors */}
           <button
             onClick={() => onSelectFloor(null)}
-            className={`flex items-center justify-between py-3.5 rounded-2xl transition-all duration-300 ${isMinimized ? 'px-3 justify-center' : 'px-5'} ${
+            className={`flex items-center justify-between py-5 rounded-2xl transition-all duration-300 ${isMinimized ? 'px-4 justify-center' : 'px-7'} ${
               selectedFloorId === null 
                 ? 'bg-blue-500/10 border border-blue-500/20 shadow-[0_0_20px_rgba(59,130,246,0.1)] text-blue-400' 
                 : 'text-[var(--text-secondary)] border border-transparent hover:bg-white/5 hover:text-[var(--text-primary)]'
@@ -86,7 +86,7 @@ export function Sidebar({ floors, devices, selectedFloorId, onSelectFloor }: Sid
               <button
                 key={floor.id}
                 onClick={() => onSelectFloor(floor.id)}
-                className={`flex items-center justify-between py-3.5 rounded-2xl transition-all duration-300 ${isMinimized ? 'px-3 justify-center' : 'px-5'} ${
+                className={`flex items-center justify-between py-5 rounded-2xl transition-all duration-300 ${isMinimized ? 'px-4 justify-center' : 'px-7'} ${
                   isActive 
                     ? 'bg-purple-500/10 border border-purple-500/20 shadow-[0_0_20px_rgba(139,92,246,0.1)] text-purple-400' 
                     : 'text-[var(--text-secondary)] border border-transparent hover:bg-white/5 hover:text-[var(--text-primary)]'

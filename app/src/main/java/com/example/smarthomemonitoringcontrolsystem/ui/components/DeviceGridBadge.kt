@@ -4,10 +4,13 @@ import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -15,15 +18,17 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.example.smarthomemonitoringcontrolsystem.data.model.Device
 import com.example.smarthomemonitoringcontrolsystem.data.model.DeviceState
+import com.example.smarthomemonitoringcontrolsystem.data.model.DeviceType
 import com.example.smarthomemonitoringcontrolsystem.ui.theme.DeviceDisconnected
 import com.example.smarthomemonitoringcontrolsystem.ui.theme.DeviceError
 import com.example.smarthomemonitoringcontrolsystem.ui.theme.DeviceOff
 import com.example.smarthomemonitoringcontrolsystem.ui.theme.DeviceOn
 import com.example.smarthomemonitoringcontrolsystem.ui.theme.GlowAmber
-import com.example.smarthomemonitoringcontrolsystem.ui.theme.GlowCyan
 import com.example.smarthomemonitoringcontrolsystem.ui.theme.GlowGreen
 import com.example.smarthomemonitoringcontrolsystem.ui.theme.GlowRed
 import com.example.smarthomemonitoringcontrolsystem.ui.theme.SurfaceContainerHighDark
@@ -32,7 +37,8 @@ import com.example.smarthomemonitoringcontrolsystem.ui.theme.SurfaceContainerHig
 fun DeviceGridBadge(
     device: Device,
     onClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    size: Dp = 44.dp
 ) {
     val borderColor by animateColorAsState(
         targetValue = when (device.state) {
@@ -51,26 +57,42 @@ fun DeviceGridBadge(
         DeviceState.DISCONNECTED -> GlowAmber
     }
 
+    val isMini = size < 40.dp
+    val iconSize = if (isMini) (size.value * 0.55f).dp else if (device.type == DeviceType.SAFETY_TIMED) 18.dp else 22.dp
+
     Box(
         modifier = modifier
-            .size(44.dp)
+            .size(size)
             .shadow(
-                elevation = if (device.state == DeviceState.ON) 8.dp else 2.dp,
+                elevation = if (device.state == DeviceState.ON) (if (isMini) 4.dp else 8.dp) else 2.dp,
                 shape = CircleShape,
                 ambientColor = glowColor,
                 spotColor = glowColor
             )
             .clip(CircleShape)
             .background(SurfaceContainerHighDark)
-            .border(2.dp, borderColor, CircleShape)
-            .clickable(onClick = onClick)
-            .padding(8.dp),
+            .border(if (isMini) 1.dp else 2.dp, borderColor, CircleShape)
+            .clickable(onClick = onClick),
         contentAlignment = Alignment.Center
     ) {
-        DeviceIcon(
-            type = device.type,
-            state = device.state,
-            modifier = Modifier.size(22.dp)
-        )
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+            if (device.type == DeviceType.SAFETY_TIMED && !isMini) {
+                Text(
+                    text = "TIMER",
+                    style = MaterialTheme.typography.labelSmall,
+                    fontSize = 7.sp,
+                    color = if (device.state == DeviceState.ON) DeviceOn else borderColor.copy(alpha = 0.7f),
+                    lineHeight = 8.sp
+                )
+            }
+            DeviceIcon(
+                type = device.type,
+                state = device.state,
+                modifier = Modifier.size(iconSize)
+            )
+        }
     }
 }

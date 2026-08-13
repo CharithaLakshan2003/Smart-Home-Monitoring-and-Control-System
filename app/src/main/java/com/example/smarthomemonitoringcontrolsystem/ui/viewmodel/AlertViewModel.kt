@@ -46,17 +46,29 @@ class AlertViewModel : ViewModel() {
     }
 
     private fun loadAlerts(userId: String): Job = viewModelScope.launch {
-        repository.getAlerts(userId).collect { alerts ->
+        try {
+            repository.getAlerts(userId).collect { alerts ->
+                _uiState.value = _uiState.value.copy(
+                    alerts = alerts,
+                    isLoading = false,
+                    error = null
+                )
+            }
+        } catch (e: Exception) {
             _uiState.value = _uiState.value.copy(
-                alerts = alerts,
-                isLoading = false
+                isLoading = false,
+                error = e.message ?: "Failed to load alerts"
             )
         }
     }
 
     private fun loadUnreadCount(userId: String): Job = viewModelScope.launch {
-        repository.getUnreadCount(userId).collect { count ->
-            _uiState.value = _uiState.value.copy(unreadCount = count)
+        try {
+            repository.getUnreadCount(userId).collect { count ->
+                _uiState.value = _uiState.value.copy(unreadCount = count)
+            }
+        } catch (e: Exception) {
+            // Silently fail for unread count or log it
         }
     }
 

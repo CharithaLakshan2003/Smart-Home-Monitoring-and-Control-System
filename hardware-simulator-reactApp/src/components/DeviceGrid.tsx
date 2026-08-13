@@ -52,10 +52,10 @@ export function DeviceGrid({ devices, floors, selectedFloorId, isLoading }: Devi
         />
       )}
 
-      <div className="flex-1 min-h-0 overflow-y-auto custom-scrollbar px-2 sm:px-6 md:px-10 py-6">
-        <div className="flex items-center gap-3 mb-8">
-          <Layers className="text-[var(--text-dim)]" size={20} />
-          <h2 className="text-lg font-bold text-white tracking-wide">Device Controls</h2>
+      <div className="flex-1 min-h-0 overflow-y-auto custom-scrollbar px-6 sm:px-10 md:px-16 py-10">
+        <div className="flex items-center gap-4 mb-12">
+          <Layers className="text-[var(--text-dim)]" size={24} />
+          <h2 className="text-2xl font-bold text-white tracking-wide">Device Controls</h2>
         </div>
 
         {isLoading ? (
@@ -76,7 +76,7 @@ export function DeviceGrid({ devices, floors, selectedFloorId, isLoading }: Devi
             </div>
           </div>
         ) : (
-          <div className="grid grid-cols-[repeat(auto-fill,minmax(320px,1fr))] gap-6">
+          <div className="grid grid-cols-[repeat(auto-fill,minmax(360px,1fr))] gap-10">
             {deviceList.map((device) => (
               <DeviceCard
                 key={device.id}
