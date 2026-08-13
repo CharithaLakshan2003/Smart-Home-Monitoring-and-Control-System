@@ -14,14 +14,18 @@ class UsageRepository {
     private val database = FirebaseDatabase.getInstance()
     private val usageRef = database.getReference("usage_logs")
 
-    fun getUsageLogs(deviceId: String? = null): Flow<List<UsageLog>> = callbackFlow {
+    fun getUsageLogs(deviceId: String? = null, floorId: String? = null): Flow<List<UsageLog>> = callbackFlow {
         val listener = object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 val logs = mutableListOf<UsageLog>()
                 for (child in snapshot.children) {
                     val log = child.getValue(UsageLog::class.java)
                     if (log != null) {
-                        logs.add(log.copy(id = child.key ?: ""))
+                        val matchesDevice = deviceId == null || log.deviceId == deviceId
+                        val matchesFloor = floorId == null || log.floorId == floorId
+                        if (matchesDevice && matchesFloor) {
+                            logs.add(log.copy(id = child.key ?: ""))
+                        }
                     }
                 }
                 logs.sortByDescending { it.onTime }

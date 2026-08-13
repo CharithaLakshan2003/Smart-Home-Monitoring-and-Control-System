@@ -1,40 +1,21 @@
 package com.example.smarthomemonitoringcontrolsystem.ui.screens
 
 import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Analytics
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FilterChip
-import androidx.compose.material3.FilterChipDefaults
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.nativeCanvas
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.smarthomemonitoringcontrolsystem.data.model.UsageLog
@@ -46,9 +27,9 @@ import com.example.smarthomemonitoringcontrolsystem.ui.theme.SecondaryDark
 import com.example.smarthomemonitoringcontrolsystem.ui.theme.TertiaryDark
 import com.example.smarthomemonitoringcontrolsystem.ui.viewmodel.DateRange
 import com.example.smarthomemonitoringcontrolsystem.ui.viewmodel.UsageViewModel
+import com.example.smarthomemonitoringcontrolsystem.data.repository.FloorRepository
 import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
+import java.util.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -57,13 +38,17 @@ fun ReportsScreen(
     contentPadding: PaddingValues = PaddingValues()
 ) {
     val uiState by usageViewModel.uiState.collectAsState()
+    val context = LocalContext.current
+    val snackbarHostState = remember { SnackbarHostState() }
 
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(contentPadding)
-    ) {
-        Column(modifier = Modifier.fillMaxSize()) {
+    LaunchedEffect(uiState.exportSuccessful) {
+        if (uiState.exportSuccessful) {
+            snackbarHostState.showSnackbar("Report exported successfully")
+        }
+    }
+
+    Scaffold(
+        topBar = {
             TopAppBar(
                 title = {
                     Text(
@@ -76,84 +61,149 @@ fun ReportsScreen(
                     containerColor = MaterialTheme.colorScheme.surface
                 )
             )
+        },
+        snackbarHost = { SnackbarHost(snackbarHostState) },
+        modifier = Modifier.padding(contentPadding)
+    ) { innerPadding ->
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+        ) {
+            if (uiState.isLoading) {
+                LoadingOverlay(isLoading = true)
+            } else {
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize(),
+                    contentPadding = PaddingValues(bottom = 16.dp)
+                ) {
+                    item {
+                        // Filter chips: Date range
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp, vertical = 8.dp),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            DateRange.entries.forEach { range ->
+                                FilterChip(
+                                    selected = uiState.dateRange == range,
+                                    onClick = { usageViewModel.setDateRange(range) },
+                                    label = { Text(range.displayName) },
+                                    colors = FilterChipDefaults.filterChipColors(
+                                        selectedContainerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f)
+                                    )
+                                )
+                            }
+                        }
+                    }
 
-            Box(modifier = Modifier.weight(1f)) {
-                if (uiState.isLoading) {
-                    LoadingOverlay(isLoading = true)
-                } else {
-                    LazyColumn(
-                        modifier = Modifier.fillMaxSize()
-                    ) {
+                    item {
+                        // Filter chips: Device, Floor
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp, vertical = 4.dp),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            val selectedDeviceName = uiState.selectedDeviceId?.let { selectedId ->
+                                val deviceLogs = uiState.logs.filter { it.deviceId == selectedId }
+                                if (deviceLogs.isNotEmpty()) deviceLogs.first().deviceName else "All Devices"
+                            } ?: "All Devices"
+                            
+                            FilterChip(
+                                selected = uiState.selectedDeviceId != null,
+                                onClick = { usageViewModel.setDeviceFilter(null) },
+                                label = { Text(selectedDeviceName) },
+                                colors = FilterChipDefaults.filterChipColors(
+                                    selectedContainerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f)
+                                )
+                            )
+
+                            val floorName = when {
+                                uiState.selectedFloorId == null -> "All Floors"
+                                else -> {
+                                    val name = FloorRepository.floorNames[uiState.selectedFloorId!!]
+                                    name ?: "Floor ${uiState.selectedFloorId}"
+                                }
+                            }
+                            FilterChip(
+                                selected = uiState.selectedFloorId != null,
+                                onClick = { usageViewModel.setFloorFilter(null) },
+                                label = { Text(floorName) },
+                                colors = FilterChipDefaults.filterChipColors(
+                                    selectedContainerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f)
+                                )
+                            )
+                        }
+                    }
+
+                    item {
+                        // Export button
+                        Button(
+                            onClick = {
+                                usageViewModel.exportReport(context)
+                            },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp, vertical = 8.dp)
+                        ) {
+                            Text(
+                                text = "Export Report",
+                                style = MaterialTheme.typography.bodyMedium,
+                                fontWeight = FontWeight.Medium
+                            )
+                        }
+                    }
+
+                    if (uiState.logs.isEmpty()) {
                         item {
-                            // Date range chips
-                            Row(
+                            EmptyState(
+                                icon = Icons.Outlined.Analytics,
+                                title = "No usage data",
+                                subtitle = "Usage logs will appear here once devices are used"
+                            )
+                        }
+                    } else {
+                        item {
+                            // Bar chart
+                            Card(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .padding(horizontal = 16.dp, vertical = 8.dp),
-                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                    .padding(16.dp),
+                                shape = RoundedCornerShape(16.dp),
+                                colors = CardDefaults.cardColors(
+                                    containerColor = MaterialTheme.colorScheme.surfaceVariant
+                                )
                             ) {
-                                DateRange.entries.forEach { range ->
-                                    FilterChip(
-                                        selected = uiState.dateRange == range,
-                                        onClick = { usageViewModel.setDateRange(range) },
-                                        label = { Text(range.displayName) },
-                                        colors = FilterChipDefaults.filterChipColors(
-                                            selectedContainerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f)
-                                        )
+                                Column(modifier = Modifier.padding(16.dp)) {
+                                    Text(
+                                        text = "Usage Duration",
+                                        style = MaterialTheme.typography.titleMedium,
+                                        fontWeight = FontWeight.SemiBold
+                                    )
+                                    Spacer(modifier = Modifier.height(12.dp))
+                                    UsageBarChart(
+                                        logs = uiState.logs,
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .height(180.dp)
                                     )
                                 }
                             }
                         }
 
-                        if (uiState.logs.isEmpty()) {
-                            item {
-                                EmptyState(
-                                    icon = Icons.Outlined.Analytics,
-                                    title = "No usage data",
-                                    subtitle = "Usage logs will appear here once devices are used"
-                                )
-                            }
-                        } else {
-                            item {
-                                // Bar chart
-                                Card(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(16.dp),
-                                    shape = RoundedCornerShape(16.dp),
-                                    colors = CardDefaults.cardColors(
-                                        containerColor = MaterialTheme.colorScheme.surfaceVariant
-                                    )
-                                ) {
-                                    Column(modifier = Modifier.padding(16.dp)) {
-                                        Text(
-                                            text = "Usage Duration",
-                                            style = MaterialTheme.typography.titleMedium,
-                                            fontWeight = FontWeight.SemiBold
-                                        )
-                                        Spacer(modifier = Modifier.height(12.dp))
-                                        UsageBarChart(
-                                            logs = uiState.logs,
-                                            modifier = Modifier
-                                                .fillMaxWidth()
-                                                .height(180.dp)
-                                        )
-                                    }
-                                }
-                            }
+                        item {
+                            Text(
+                                text = "Activity Log",
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.SemiBold,
+                                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+                            )
+                        }
 
-                            item {
-                                Text(
-                                    text = "Activity Log",
-                                    style = MaterialTheme.typography.titleMedium,
-                                    fontWeight = FontWeight.SemiBold,
-                                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
-                                )
-                            }
-
-                            items(uiState.logs) { log ->
-                                UsageLogItem(log = log)
-                            }
+                        items(uiState.logs) { log ->
+                            UsageLogItem(log = log)
                         }
                     }
                 }
@@ -167,7 +217,6 @@ private fun UsageBarChart(
     logs: List<UsageLog>,
     modifier: Modifier = Modifier
 ) {
-    // Group by device and sum durations
     val deviceDurations = logs.groupBy { it.deviceName }
         .mapValues { (_, logs) -> logs.sumOf { it.durationSeconds } }
         .toList()
@@ -176,7 +225,6 @@ private fun UsageBarChart(
 
     val maxDuration = deviceDurations.maxOfOrNull { it.second }?.toFloat() ?: 1f
     val barColors = listOf(PrimaryDark, SecondaryDark, TertiaryDark, DeviceOn, Color(0xFFFF7043), Color(0xFF8D6E63))
-
     val onSurfaceVariant = MaterialTheme.colorScheme.onSurfaceVariant
 
     Canvas(modifier = modifier) {
@@ -190,7 +238,6 @@ private fun UsageBarChart(
             val x = 20f + index * barWidth
             val y = maxBarHeight - barHeight
 
-            // Draw bar
             drawRoundRect(
                 color = barColors.getOrElse(index) { PrimaryDark },
                 topLeft = Offset(x + barWidth * 0.15f, y),
@@ -198,7 +245,6 @@ private fun UsageBarChart(
                 cornerRadius = androidx.compose.ui.geometry.CornerRadius(8f, 8f)
             )
 
-            // Draw label
             drawContext.canvas.nativeCanvas.drawText(
                 name.take(8),
                 x + barWidth / 2,
@@ -216,7 +262,9 @@ private fun UsageBarChart(
 @Composable
 private fun UsageLogItem(log: UsageLog) {
     Card(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 4.dp),
         shape = RoundedCornerShape(10.dp),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)

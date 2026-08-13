@@ -11,6 +11,15 @@ import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.tasks.await
 
 class FloorRepository {
+    companion object {
+        val floorNames = mapOf(
+            "floor_1" to "Ground Floor",
+            "floor_2" to "First Floor",
+            "floor_3" to "Second Floor",
+            "floor_4" to "Third Floor"
+        )
+    }
+
     private val database = FirebaseDatabase.getInstance()
     private val floorsRef = database.getReference("floors")
 
