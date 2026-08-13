@@ -27,7 +27,7 @@ export function FloorPlanView({ floor, devices, onDeviceClick }: FloorPlanViewPr
     >
       {/* Title bar */}
       <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-2.5">
+        <div className="flex items-center gap-3">
           <div
             className="w-8 h-8 rounded-lg flex items-center justify-center"
             style={{ background: planStyle.bgColor }}

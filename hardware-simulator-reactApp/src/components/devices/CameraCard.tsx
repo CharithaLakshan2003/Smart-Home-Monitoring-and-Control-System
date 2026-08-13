@@ -16,7 +16,7 @@ export function CameraCard({ device, isOn, isDisabled }: CameraCardProps) {
   return (
     <>
       {/* Camera feed toggle */}
-      <div className="flex items-center gap-3 mt-3.5">
+      <div className="flex items-center gap-3 mt-4">
         <span className="text-[0.8rem] text-[var(--text-secondary)] font-medium">Camera Feed</span>
         <ToggleSwitch
           checked={isOn}
@@ -26,7 +26,7 @@ export function CameraCard({ device, isOn, isDisabled }: CameraCardProps) {
       </div>
 
       {/* Camera preview */}
-      <div className="mt-3.5">
+      <div className="mt-4">
         <div
           className={`w-full aspect-video rounded-lg flex flex-col items-center justify-center gap-2 overflow-hidden relative ${
             isOn ? 'border-[rgba(20,184,166,0.3)]' : ''
@@ -58,19 +58,19 @@ export function CameraCard({ device, isOn, isDisabled }: CameraCardProps) {
 
           {/* REC indicator */}
           {isOn && (
-            <span className="absolute top-2 right-2.5 text-[0.65rem] font-bold text-[var(--color-state-error)] animate-[pulse-text_1.5s_infinite] tracking-wide">
+            <span className="absolute top-2 right-2 text-[0.65rem] font-bold text-[var(--color-state-error)] animate-[pulse-text_1.5s_infinite] tracking-wide">
               ● REC
             </span>
           )}
         </div>
 
         {streamUrl && (
-          <div className="mt-2 font-mono text-[0.7rem] text-[var(--text-dim)] break-all px-2.5 py-1.5 rounded-md bg-white/[0.03]">
+          <div className="mt-2 font-mono text-[0.7rem] text-[var(--text-dim)] break-all px-3 py-2 rounded-md bg-white/[0.03]">
             Stream: {streamUrl}
           </div>
         )}
         {snapshotUrl && (
-          <div className="mt-2 font-mono text-[0.7rem] text-[var(--text-dim)] break-all px-2.5 py-1.5 rounded-md bg-white/[0.03]">
+          <div className="mt-2 font-mono text-[0.7rem] text-[var(--text-dim)] break-all px-3 py-2 rounded-md bg-white/[0.03]">
             Snapshot: {snapshotUrl}
           </div>
         )}

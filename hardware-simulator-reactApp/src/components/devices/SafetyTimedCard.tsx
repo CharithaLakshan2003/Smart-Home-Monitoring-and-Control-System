@@ -52,7 +52,7 @@ export function SafetyTimedCard({ device, isOn, isDisabled }: SafetyTimedCardPro
   return (
     <>
       {/* Power toggle */}
-      <div className="flex items-center gap-3 mt-3.5">
+      <div className="flex items-center gap-3 mt-4">
         <span className="text-[0.8rem] text-[var(--text-secondary)] font-medium">Power</span>
         <ToggleSwitch
           checked={isOn}
@@ -63,7 +63,7 @@ export function SafetyTimedCard({ device, isOn, isDisabled }: SafetyTimedCardPro
 
       {/* Timer section */}
       <div
-        className="mt-3.5 p-3 rounded-lg"
+        className="mt-4 p-3 rounded-lg"
         style={{
           background: 'rgba(249, 115, 22, 0.08)',
           border: '1px solid rgba(249, 115, 22, 0.15)',
@@ -102,7 +102,7 @@ export function SafetyTimedCard({ device, isOn, isDisabled }: SafetyTimedCardPro
           </>
         ) : autoOffTriggered ? (
           <>
-            <div className="mt-2 inline-flex items-center gap-1 px-2.5 py-1 rounded-xl text-[0.72rem] font-semibold"
+            <div className="mt-2 inline-flex items-center gap-1 px-3 py-1 rounded-xl text-[0.72rem] font-semibold"
               style={{ background: 'rgba(239, 68, 68, 0.15)', color: '#f87171' }}
             >
               <AlertTriangle size={12} /> Auto-off was triggered (safety cutoff)

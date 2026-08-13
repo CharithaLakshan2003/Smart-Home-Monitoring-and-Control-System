@@ -17,7 +17,7 @@ export function ScheduledLightCard({ device, isOn, isDisabled }: ScheduledLightC
   return (
     <>
       {/* Power toggle */}
-      <div className="flex items-center gap-3 mt-3.5">
+      <div className="flex items-center gap-3 mt-4">
         <span className="text-[0.8rem] text-[var(--text-secondary)] font-medium">Power</span>
         <ToggleSwitch
           checked={isOn}
@@ -28,13 +28,13 @@ export function ScheduledLightCard({ device, isOn, isDisabled }: ScheduledLightC
 
       {/* Schedule panel */}
       <div
-        className="mt-3.5 p-3 rounded-lg"
+        className="mt-4 p-3 rounded-lg"
         style={{
           background: 'rgba(234, 179, 8, 0.08)',
           border: '1px solid rgba(234, 179, 8, 0.15)',
         }}
       >
-        <div className="flex items-center gap-2.5 font-mono text-[0.9rem] text-[#eab308] font-medium">
+        <div className="flex items-center gap-3 font-mono text-[0.9rem] text-[#eab308] font-medium">
           <span className="flex items-center gap-1">
             <Clock size={14} /> {scheduleStart}
           </span>

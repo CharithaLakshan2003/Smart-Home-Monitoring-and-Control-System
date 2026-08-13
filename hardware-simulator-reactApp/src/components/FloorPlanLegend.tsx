@@ -7,7 +7,7 @@ export function FloorPlanLegend() {
   ];
 
   return (
-    <div className="flex items-center justify-center gap-6 mt-3 px-6">
+    <div className="flex items-center justify-center gap-5 mt-3 px-4 flex-wrap">
       {items.map((item) => (
         <div key={item.label} className="flex items-center gap-1.5">
           <span
