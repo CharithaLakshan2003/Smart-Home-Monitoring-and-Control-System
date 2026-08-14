@@ -20,7 +20,7 @@ class AlertRepository {
                 val alerts = mutableListOf<Alert>()
                 for (child in snapshot.children) {
                     val alert = child.getValue(Alert::class.java)
-                    if (alert != null) {
+                    if (alert != null && alert.userId == userId) {
                         alerts.add(alert.copy(id = child.key ?: ""))
                     }
                 }
@@ -43,7 +43,7 @@ class AlertRepository {
                 var count = 0
                 for (child in snapshot.children) {
                     val alert = child.getValue(Alert::class.java)
-                    if (alert != null && !alert.read) {
+                    if (alert != null && alert.userId == userId && !alert.read) {
                         count++
                     }
                 }

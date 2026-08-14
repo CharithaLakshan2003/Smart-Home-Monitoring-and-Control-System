@@ -2,6 +2,7 @@ package com.example.smarthomemonitoringcontrolsystem.data.model
 
 data class Alert(
     val id: String = "",
+    val userId: String = "",
     val deviceId: String = "",
     val floorId: String = "",
     val deviceName: String = "",

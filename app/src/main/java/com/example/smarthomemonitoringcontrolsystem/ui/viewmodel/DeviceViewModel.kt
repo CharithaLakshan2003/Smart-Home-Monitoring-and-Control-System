@@ -9,6 +9,7 @@ import com.example.smarthomemonitoringcontrolsystem.data.model.UsageLog
 import com.example.smarthomemonitoringcontrolsystem.data.repository.AlertRepository
 import com.example.smarthomemonitoringcontrolsystem.data.repository.DeviceRepository
 import com.example.smarthomemonitoringcontrolsystem.data.repository.UsageRepository
+import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -25,9 +26,12 @@ class DeviceViewModel : ViewModel() {
     private val repository = DeviceRepository()
     private val alertRepository = AlertRepository()
     private val usageRepository = UsageRepository()
+    private val auth = FirebaseAuth.getInstance()
 
     private val _uiState = MutableStateFlow(DeviceUiState())
     val uiState: StateFlow<DeviceUiState> = _uiState.asStateFlow()
+
+    private fun currentUserId(): String = auth.currentUser?.uid ?: ""
 
     fun loadDevices(floorId: String) {
         viewModelScope.launch {
@@ -94,6 +98,7 @@ class DeviceViewModel : ViewModel() {
                 if (device.type.name == "SAFETY_TIMED" && device.autoOffTriggered) {
                     alertRepository.addAlert(
                         Alert(
+                            userId = currentUserId(),
                             deviceId = device.id,
                             floorId = device.floorId,
                             deviceName = device.label,
@@ -107,6 +112,7 @@ class DeviceViewModel : ViewModel() {
             if (newState == DeviceState.ON && device.state == DeviceState.OFF) {
                 alertRepository.addAlert(
                     Alert(
+                        userId = currentUserId(),
                         deviceId = device.id,
                         floorId = device.floorId,
                         deviceName = device.label,
@@ -137,6 +143,7 @@ class DeviceViewModel : ViewModel() {
                 if (!wasOn) {
                     alertRepository.addAlert(
                         Alert(
+                            userId = currentUserId(),
                             deviceId = device.id,
                             floorId = device.floorId,
                             deviceName = device.label,
@@ -147,6 +154,7 @@ class DeviceViewModel : ViewModel() {
                 } else {
                     alertRepository.addAlert(
                         Alert(
+                            userId = currentUserId(),
                             deviceId = device.id,
                             floorId = device.floorId,
                             deviceName = device.label,
@@ -172,6 +180,7 @@ class DeviceViewModel : ViewModel() {
 
             alertRepository.addAlert(
                 Alert(
+                    userId = currentUserId(),
                     deviceId = device.id,
                     floorId = device.floorId,
                     deviceName = device.label,
