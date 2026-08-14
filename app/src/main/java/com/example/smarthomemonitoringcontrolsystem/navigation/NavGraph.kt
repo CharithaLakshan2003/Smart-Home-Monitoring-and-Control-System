@@ -108,8 +108,13 @@ fun NavGraph(
         // Floor Dashboard
         composable(Screen.FloorDashboard.route) { backStackEntry ->
             val floorId = backStackEntry.arguments?.getString("floorId") ?: ""
+            val floorUiState by floorViewModel.uiState.collectAsState()
+            val floor = floorUiState.floors.find { it.id == floorId }
             FloorDashboardScreen(
                 floorId = floorId,
+                floorName = floor?.name ?: "Floor",
+                gridRows = floor?.gridRows ?: 4,
+                gridCols = floor?.gridCols ?: 4,
                 deviceViewModel = deviceViewModel,
                 onAddDevice = {
                     navController.navigate(Screen.AddDevice.createRoute(floorId))
@@ -124,8 +129,12 @@ fun NavGraph(
         // Add Device
         composable(Screen.AddDevice.route) { backStackEntry ->
             val floorId = backStackEntry.arguments?.getString("floorId") ?: ""
+            val floorUiState by floorViewModel.uiState.collectAsState()
+            val floor = floorUiState.floors.find { it.id == floorId }
             AddDeviceScreen(
                 floorId = floorId,
+                gridRows = floor?.gridRows ?: 4,
+                gridCols = floor?.gridCols ?: 4,
                 deviceViewModel = deviceViewModel,
                 onNavigateBack = { navController.popBackStack() }
             )

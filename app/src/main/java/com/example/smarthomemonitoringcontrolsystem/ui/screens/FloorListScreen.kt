@@ -73,6 +73,7 @@ fun FloorListScreen(
     val uiState by floorViewModel.uiState.collectAsState()
     var showMenu by remember { mutableStateOf(false) }
     var floorToDelete by remember { mutableStateOf<Floor?>(null) }
+    var showLogoutConfirm by remember { mutableStateOf(false) }
 
     Box(
         modifier = Modifier
@@ -118,7 +119,7 @@ fun FloorListScreen(
                                 text = { Text("Logout") },
                                 onClick = {
                                     showMenu = false
-                                    onLogout()
+                                    showLogoutConfirm = true
                                 },
                                 leadingIcon = { Icon(Icons.Filled.Logout, "Logout") }
                             )
@@ -190,6 +191,30 @@ fun FloorListScreen(
             },
             dismissButton = {
                 TextButton(onClick = { floorToDelete = null }) {
+                    Text("Cancel")
+                }
+            }
+        )
+    }
+
+    // Logout confirmation dialog
+    if (showLogoutConfirm) {
+        AlertDialog(
+            onDismissRequest = { showLogoutConfirm = false },
+            title = { Text("Logout") },
+            text = { Text("Are you sure you want to logout?") },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        showLogoutConfirm = false
+                        onLogout()
+                    }
+                ) {
+                    Text("Logout", color = MaterialTheme.colorScheme.error)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showLogoutConfirm = false }) {
                     Text("Cancel")
                 }
             }
