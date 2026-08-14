@@ -1,9 +1,11 @@
 package com.example.smarthomemonitoringcontrolsystem.ui.screens
 
-import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.background
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Analytics
@@ -11,13 +13,14 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import com.example.smarthomemonitoringcontrolsystem.data.model.Device
 import com.example.smarthomemonitoringcontrolsystem.data.model.UsageLog
 import com.example.smarthomemonitoringcontrolsystem.ui.components.EmptyState
 import com.example.smarthomemonitoringcontrolsystem.ui.components.LoadingOverlay
@@ -78,10 +81,11 @@ fun ReportsScreen(
                     contentPadding = PaddingValues(bottom = 16.dp)
                 ) {
                     item {
-                        // Filter chips: Date range
+                        // Date range chips: Today / This Week / This Month
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
+                                .horizontalScroll(rememberScrollState())
                                 .padding(horizontal = 16.dp, vertical = 8.dp),
                             horizontalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
@@ -99,42 +103,32 @@ fun ReportsScreen(
                     }
 
                     item {
-                        // Filter chips: Device, Floor
+                        // Floor selector: All Floors + every floor
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
+                                .horizontalScroll(rememberScrollState())
                                 .padding(horizontal = 16.dp, vertical = 4.dp),
                             horizontalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
-                            val selectedDeviceName = uiState.selectedDeviceId?.let { selectedId ->
-                                val deviceLogs = uiState.logs.filter { it.deviceId == selectedId }
-                                if (deviceLogs.isNotEmpty()) deviceLogs.first().deviceName else "All Devices"
-                            } ?: "All Devices"
-                            
                             FilterChip(
-                                selected = uiState.selectedDeviceId != null,
-                                onClick = { usageViewModel.setDeviceFilter(null) },
-                                label = { Text(selectedDeviceName) },
-                                colors = FilterChipDefaults.filterChipColors(
-                                    selectedContainerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f)
-                                )
-                            )
-
-                            val floorName = when {
-                                uiState.selectedFloorId == null -> "All Floors"
-                                else -> {
-                                    val name = FloorRepository.floorNames[uiState.selectedFloorId!!]
-                                    name ?: "Floor ${uiState.selectedFloorId}"
-                                }
-                            }
-                            FilterChip(
-                                selected = uiState.selectedFloorId != null,
+                                selected = uiState.selectedFloorId == null,
                                 onClick = { usageViewModel.setFloorFilter(null) },
-                                label = { Text(floorName) },
+                                label = { Text("All Floors") },
                                 colors = FilterChipDefaults.filterChipColors(
                                     selectedContainerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f)
                                 )
                             )
+                            uiState.floors.forEach { floor ->
+                                FilterChip(
+                                    selected = uiState.selectedFloorId == floor.id,
+                                    onClick = { usageViewModel.setFloorFilter(floor.id) },
+                                    label = { Text(floor.name) },
+                                    colors = FilterChipDefaults.filterChipColors(
+                                        selectedContainerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f)
+                                    )
+                                )
+                            }
                         }
                     }
 
@@ -147,12 +141,49 @@ fun ReportsScreen(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(horizontal = 16.dp, vertical = 8.dp)
-                        ) {
+                            ) {
+                                Text(
+                                    text = "Export Report",
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    fontWeight = FontWeight.Medium
+                                )
+                        }
+                    }
+
+                    val selectedFloorName = uiState.selectedFloorId?.let { id ->
+                        uiState.floors.firstOrNull { it.id == id }?.name
+                            ?: FloorRepository.floorNames[id]
+                            ?: "Floor $id"
+                    }
+
+                    // Device list for the selected floor
+                    if (uiState.selectedFloorId != null) {
+                        item {
                             Text(
-                                text = "Export Report",
-                                style = MaterialTheme.typography.bodyMedium,
-                                fontWeight = FontWeight.Medium
+                                text = "Devices on $selectedFloorName",
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.SemiBold,
+                                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
                             )
+                        }
+                        if (uiState.floorDevices.isEmpty()) {
+                            item {
+                                Text(
+                                    text = "No devices found on this floor",
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(horizontal = 16.dp, vertical = 4.dp)
+                                )
+                            }
+                        } else {
+                            items(uiState.floorDevices) { device ->
+                                FloorDeviceItem(
+                                    device = device,
+                                    logs = uiState.logs.filter { it.deviceId == device.id }
+                                )
+                            }
                         }
                     }
 
@@ -166,7 +197,15 @@ fun ReportsScreen(
                         }
                     } else {
                         item {
-                            // Bar chart
+                            StatisticsSummary(
+                                logs = uiState.logs,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(16.dp, 8.dp)
+                            )
+                        }
+
+                        item {
                             Card(
                                 modifier = Modifier
                                     .fillMaxWidth()
@@ -182,12 +221,15 @@ fun ReportsScreen(
                                         style = MaterialTheme.typography.titleMedium,
                                         fontWeight = FontWeight.SemiBold
                                     )
+                                    Text(
+                                        text = buildRangeDescription(uiState.dateRange),
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
                                     Spacer(modifier = Modifier.height(12.dp))
                                     UsageBarChart(
                                         logs = uiState.logs,
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .height(180.dp)
+                                        modifier = Modifier.fillMaxWidth()
                                     )
                                 }
                             }
@@ -213,48 +255,193 @@ fun ReportsScreen(
 }
 
 @Composable
+private fun FloorDeviceItem(
+    device: Device,
+    logs: List<UsageLog>
+) {
+    val totalDuration = logs.sumOf { it.durationSeconds }
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 4.dp),
+        shape = RoundedCornerShape(10.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+        )
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(12.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = device.label,
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontWeight = FontWeight.Medium
+                )
+                Text(
+                    text = device.type.displayName,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+            Column(horizontalAlignment = Alignment.End) {
+                Text(
+                    text = if (logs.isEmpty()) "No usage" else formatLogDuration(totalDuration),
+                    style = MaterialTheme.typography.labelLarge,
+                    fontWeight = FontWeight.Bold,
+                    color = if (logs.isEmpty()) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.primary
+                )
+                Text(
+                    text = if (logs.isEmpty()) "in selected range" else "${logs.size} event(s)",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    textAlign = TextAlign.End
+                )
+            }
+        }
+    }
+}
+
+@Composable
 private fun UsageBarChart(
     logs: List<UsageLog>,
     modifier: Modifier = Modifier
 ) {
     val deviceDurations = logs.groupBy { it.deviceName }
-        .mapValues { (_, logs) -> logs.sumOf { it.durationSeconds } }
+        .mapValues { (_, deviceLogs) -> deviceLogs.sumOf { it.durationSeconds } }
         .toList()
         .sortedByDescending { it.second }
         .take(6)
 
-    val maxDuration = deviceDurations.maxOfOrNull { it.second }?.toFloat() ?: 1f
+    if (deviceDurations.isEmpty()) return
+
+    val maxDuration = deviceDurations.maxOfOrNull { it.second } ?: 1L
     val barColors = listOf(PrimaryDark, SecondaryDark, TertiaryDark, DeviceOn, Color(0xFFFF7043), Color(0xFF8D6E63))
-    val onSurfaceVariant = MaterialTheme.colorScheme.onSurfaceVariant
+    val trackColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.12f)
+    val labelColor = MaterialTheme.colorScheme.onSurfaceVariant
 
-    Canvas(modifier = modifier) {
-        if (deviceDurations.isEmpty()) return@Canvas
-
-        val barWidth = (size.width - 40f) / deviceDurations.size
-        val maxBarHeight = size.height - 40f
-
+    Column(
+        modifier = modifier,
+        verticalArrangement = Arrangement.spacedBy(10.dp)
+    ) {
         deviceDurations.forEachIndexed { index, (name, duration) ->
-            val barHeight = (duration / maxDuration) * maxBarHeight
-            val x = 20f + index * barWidth
-            val y = maxBarHeight - barHeight
-
-            drawRoundRect(
-                color = barColors.getOrElse(index) { PrimaryDark },
-                topLeft = Offset(x + barWidth * 0.15f, y),
-                size = Size(barWidth * 0.7f, barHeight),
-                cornerRadius = androidx.compose.ui.geometry.CornerRadius(8f, 8f)
-            )
-
-            drawContext.canvas.nativeCanvas.drawText(
-                name.take(8),
-                x + barWidth / 2,
-                size.height - 4f,
-                android.graphics.Paint().apply {
-                    color = onSurfaceVariant.hashCode()
-                    textSize = 24f
-                    textAlign = android.graphics.Paint.Align.CENTER
+            val fraction = if (maxDuration > 0L) {
+                (duration.toFloat() / maxDuration).coerceAtLeast(0.02f)
+            } else {
+                0f
+            }
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = name,
+                    style = MaterialTheme.typography.bodySmall,
+                    fontWeight = FontWeight.Medium,
+                    color = labelColor,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.width(92.dp)
+                )
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .height(20.dp)
+                        .clip(RoundedCornerShape(6.dp))
+                        .background(trackColor)
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxHeight()
+                            .fillMaxWidth(fraction)
+                            .clip(RoundedCornerShape(6.dp))
+                            .background(barColors.getOrElse(index) { PrimaryDark })
+                    )
                 }
+                Text(
+                    text = formatLogDuration(duration),
+                    style = MaterialTheme.typography.labelMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.primary,
+                    textAlign = TextAlign.End,
+                    modifier = Modifier.width(76.dp)
+                )
+            }
+        }
+    }
+}
+
+private fun buildRangeDescription(range: DateRange): String {
+    val now = Calendar.getInstance()
+    val formatter = SimpleDateFormat("MMM d", Locale.getDefault())
+    val today = formatter.format(now.time)
+    return when (range) {
+        DateRange.TODAY -> "Today, $today"
+        DateRange.THIS_WEEK -> {
+            val start = Calendar.getInstance().apply { add(Calendar.DAY_OF_YEAR, -6) }
+            "Last 7 days (${formatter.format(start.time)} – $today)"
+        }
+        DateRange.THIS_MONTH -> {
+            val start = Calendar.getInstance().apply { add(Calendar.DAY_OF_YEAR, -29) }
+            "Last 30 days (${formatter.format(start.time)} – $today)"
+        }
+    }
+}
+
+@Composable
+private fun StatisticsSummary(
+    logs: List<UsageLog>,
+    modifier: Modifier = Modifier
+) {
+    val totalDuration = logs.sumOf { it.durationSeconds }
+    val numEvents = logs.size
+    val avgDuration = if (numEvents > 0) totalDuration / numEvents else 0
+
+    Card(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(16.dp, 8.dp),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant
+        )
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Text(
+                text = "Usage Summary",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.SemiBold
             )
+            Spacer(modifier = Modifier.height(4.dp))
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text(
+                    text = "Total: ${formatLogDuration(totalDuration)}",
+                    style = MaterialTheme.typography.bodySmall
+                )
+                Text(
+                    text = "Events: $numEvents",
+                    style = MaterialTheme.typography.bodySmall
+                )
+            }
+
+            Spacer(modifier = Modifier.height(4.dp))
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text(
+                    text = "Avg/Event: ${formatLogDuration(avgDuration.toLong())}",
+                    style = MaterialTheme.typography.bodySmall
+                )
+            }
         }
     }
 }
