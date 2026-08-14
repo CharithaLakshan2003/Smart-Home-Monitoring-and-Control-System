@@ -86,6 +86,7 @@ class DeviceViewModel : ViewModel() {
                 val duration = if (device.turnedOnAt > 0) (now - device.turnedOnAt) / 1000 else 0
                 usageRepository.logUsage(
                     UsageLog(
+                        userId = currentUserId(),
                         deviceId = device.id,
                         deviceName = device.label,
                         floorId = device.floorId,

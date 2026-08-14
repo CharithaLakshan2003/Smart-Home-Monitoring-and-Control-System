@@ -2,6 +2,7 @@ package com.example.smarthomemonitoringcontrolsystem.data.model
 
 data class UsageLog(
     val id: String = "",
+    val userId: String = "",
     val deviceId: String = "",
     val deviceName: String = "",
     val floorId: String = "",

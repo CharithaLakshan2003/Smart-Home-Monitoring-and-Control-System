@@ -65,9 +65,11 @@ class UsageViewModel : ViewModel() {
 
     private fun loadLogs() {
         viewModelScope.launch {
+            val uid = auth.currentUser?.uid ?: return@launch
             repository.getUsageLogs(
                 _uiState.value.selectedDeviceId,
-                _uiState.value.selectedFloorId
+                _uiState.value.selectedFloorId,
+                uid
             ).collect { rawLogs ->
                 _uiState.value = _uiState.value.copy(
                     allLogs = rawLogs,
