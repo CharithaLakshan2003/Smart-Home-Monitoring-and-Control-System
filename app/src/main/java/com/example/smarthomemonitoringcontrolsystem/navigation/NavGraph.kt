@@ -2,6 +2,8 @@ package com.example.smarthomemonitoringcontrolsystem.navigation
 
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -20,6 +22,7 @@ import com.example.smarthomemonitoringcontrolsystem.ui.viewmodel.AlertViewModel
 import com.example.smarthomemonitoringcontrolsystem.ui.viewmodel.AuthViewModel
 import com.example.smarthomemonitoringcontrolsystem.ui.viewmodel.DeviceViewModel
 import com.example.smarthomemonitoringcontrolsystem.ui.viewmodel.FloorViewModel
+import com.example.smarthomemonitoringcontrolsystem.ui.viewmodel.ThemeViewModel
 import com.example.smarthomemonitoringcontrolsystem.ui.viewmodel.UsageViewModel
 
 @Composable
@@ -30,8 +33,11 @@ fun NavGraph(
     deviceViewModel: DeviceViewModel,
     alertViewModel: AlertViewModel,
     usageViewModel: UsageViewModel,
+    themeViewModel: ThemeViewModel,
     contentPadding: PaddingValues
 ) {
+    val isDarkTheme by themeViewModel.isDarkTheme.collectAsState()
+
     NavHost(
         navController = navController,
         startDestination = Screen.Splash.route
@@ -39,6 +45,7 @@ fun NavGraph(
         // Splash
         composable(Screen.Splash.route) {
             SplashScreen(
+                darkTheme = isDarkTheme,
                 onNavigateToLogin = {
                     navController.navigate(Screen.Login.route) {
                         popUpTo(Screen.Splash.route) { inclusive = true }
@@ -56,6 +63,7 @@ fun NavGraph(
         composable(Screen.Login.route) {
             LoginScreen(
                 authViewModel = authViewModel,
+                darkTheme = isDarkTheme,
                 onLoginSuccess = {
                     navController.navigate(Screen.FloorList.route) {
                         popUpTo(Screen.Login.route) { inclusive = true }
@@ -157,6 +165,7 @@ fun NavGraph(
         // Settings
         composable(Screen.Settings.route) {
             SettingsScreen(
+                themeViewModel = themeViewModel,
                 onLogout = {
                     authViewModel.signOut()
                     navController.navigate(Screen.Login.route) {

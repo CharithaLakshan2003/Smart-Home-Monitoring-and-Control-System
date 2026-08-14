@@ -21,6 +21,7 @@ import com.example.smarthomemonitoringcontrolsystem.ui.viewmodel.AlertViewModel
 import com.example.smarthomemonitoringcontrolsystem.ui.viewmodel.AuthViewModel
 import com.example.smarthomemonitoringcontrolsystem.ui.viewmodel.DeviceViewModel
 import com.example.smarthomemonitoringcontrolsystem.ui.viewmodel.FloorViewModel
+import com.example.smarthomemonitoringcontrolsystem.ui.viewmodel.ThemeViewModel
 import com.example.smarthomemonitoringcontrolsystem.ui.viewmodel.UsageViewModel
 
 class MainActivity : ComponentActivity() {
@@ -28,15 +29,17 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            SmartHomeMonitoringControlSystemTheme {
-                SmartHomeApp()
+            val themeViewModel: ThemeViewModel = viewModel()
+            val isDarkTheme by themeViewModel.isDarkTheme.collectAsState()
+            SmartHomeMonitoringControlSystemTheme(darkTheme = isDarkTheme) {
+                SmartHomeApp(themeViewModel = themeViewModel)
             }
         }
     }
 }
 
 @Composable
-fun SmartHomeApp() {
+fun SmartHomeApp(themeViewModel: ThemeViewModel) {
     val navController = rememberNavController()
     val authViewModel: AuthViewModel = viewModel()
     val floorViewModel: FloorViewModel = viewModel()
@@ -86,6 +89,7 @@ fun SmartHomeApp() {
             deviceViewModel = deviceViewModel,
             alertViewModel = alertViewModel,
             usageViewModel = usageViewModel,
+            themeViewModel = themeViewModel,
             contentPadding = if (showBottomBar) innerPadding else innerPadding
         )
     }
