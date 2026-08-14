@@ -28,9 +28,10 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.example.smarthomemonitoringcontrolsystem.ui.theme.GradientEnd
-import com.example.smarthomemonitoringcontrolsystem.ui.theme.GradientMid
-import com.example.smarthomemonitoringcontrolsystem.ui.theme.GradientStart
+import com.example.smarthomemonitoringcontrolsystem.ui.theme.LightGradientEnd
+import com.example.smarthomemonitoringcontrolsystem.ui.theme.LightGradientMid
+import com.example.smarthomemonitoringcontrolsystem.ui.theme.LightGradientStart
+import com.example.smarthomemonitoringcontrolsystem.ui.theme.SmartHomeMonitoringControlSystemTheme
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.delay
 
@@ -57,45 +58,48 @@ fun SplashScreen(
         }
     }
 
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(
-                Brush.verticalGradient(
-                    colors = listOf(GradientStart, GradientMid, GradientEnd)
-                )
-            ),
-        contentAlignment = Alignment.Center
-    ) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center,
-            modifier = Modifier.alpha(alphaAnim)
+    SmartHomeMonitoringControlSystemTheme(darkTheme = false) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(
+                    Brush.verticalGradient(
+                        colors = listOf(LightGradientStart, LightGradientMid, LightGradientEnd)
+                    )
+                ),
+            contentAlignment = Alignment.Center
         ) {
-            Icon(
-                imageVector = Icons.Filled.Home,
-                contentDescription = "App Logo",
-                modifier = Modifier.size(80.dp),
-                tint = MaterialTheme.colorScheme.primary
-            )
-            Spacer(modifier = Modifier.height(16.dp))
-            Text(
-                text = "Smart Home",
-                style = MaterialTheme.typography.displayMedium,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onBackground
-            )
-            Text(
-                text = "Monitor & Control",
-                style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.primary
-            )
-            Spacer(modifier = Modifier.height(48.dp))
-            CircularProgressIndicator(
-                modifier = Modifier.size(32.dp),
-                color = MaterialTheme.colorScheme.primary,
-                strokeWidth = 2.dp
-            )
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center,
+                modifier = Modifier.alpha(alphaAnim)
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.Home,
+                    contentDescription = "App Logo",
+                    modifier = Modifier.size(88.dp),
+                    tint = MaterialTheme.colorScheme.primary
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+                Text(
+                    text = "Smart Home",
+                    style = MaterialTheme.typography.displayMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                Text(
+                    text = "Monitor & Control",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold,
+                    color = MaterialTheme.colorScheme.primary
+                )
+                Spacer(modifier = Modifier.height(48.dp))
+                CircularProgressIndicator(
+                    modifier = Modifier.size(32.dp),
+                    color = MaterialTheme.colorScheme.primary,
+                    strokeWidth = 2.dp
+                )
+            }
         }
     }
 }

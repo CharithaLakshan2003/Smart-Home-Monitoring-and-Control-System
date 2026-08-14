@@ -63,3 +63,8 @@ val GlowAmber = Color(0x4DFFB74D)
 val GradientStart = Color(0xFF0D1B2A)
 val GradientMid = Color(0xFF1B2838)
 val GradientEnd = Color(0xFF121218)
+
+// Light gradient colors (auth screens)
+val LightGradientStart = Color(0xFFE0F7FA)
+val LightGradientMid = Color(0xFFF1F9FF)
+val LightGradientEnd = Color(0xFFFFFFFF)
