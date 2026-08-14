@@ -1,5 +1,7 @@
 package com.example.smarthomemonitoringcontrolsystem.ui.screens
 
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
@@ -31,6 +33,7 @@ import com.example.smarthomemonitoringcontrolsystem.ui.theme.TertiaryDark
 import com.example.smarthomemonitoringcontrolsystem.ui.viewmodel.DateRange
 import com.example.smarthomemonitoringcontrolsystem.ui.viewmodel.UsageViewModel
 import com.example.smarthomemonitoringcontrolsystem.data.repository.FloorRepository
+import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -43,10 +46,25 @@ fun ReportsScreen(
     val uiState by usageViewModel.uiState.collectAsState()
     val context = LocalContext.current
     val snackbarHostState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
 
-    LaunchedEffect(uiState.exportSuccessful) {
-        if (uiState.exportSuccessful) {
-            snackbarHostState.showSnackbar("Report exported successfully")
+    val exportLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.CreateDocument("text/csv")
+    ) { uri ->
+        if (uri != null) {
+            try {
+                val data = usageViewModel.buildExportData()
+                context.contentResolver.openOutputStream(uri)?.use { stream ->
+                    stream.write(data.toByteArray(Charsets.UTF_8))
+                }
+                scope.launch {
+                    snackbarHostState.showSnackbar("Report downloaded successfully")
+                }
+            } catch (e: Exception) {
+                scope.launch {
+                    snackbarHostState.showSnackbar("Export failed: ${e.message}")
+                }
+            }
         }
     }
 
@@ -136,14 +154,16 @@ fun ReportsScreen(
                         // Export button
                         Button(
                             onClick = {
-                                usageViewModel.exportReport(context)
+                                val timestamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault())
+                                    .format(System.currentTimeMillis())
+                                exportLauncher.launch("smart_home_usage_report_$timestamp.csv")
                             },
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(horizontal = 16.dp, vertical = 8.dp)
                             ) {
                                 Text(
-                                    text = "Export Report",
+                                    text = "Download Report",
                                     style = MaterialTheme.typography.bodyMedium,
                                     fontWeight = FontWeight.Medium
                                 )

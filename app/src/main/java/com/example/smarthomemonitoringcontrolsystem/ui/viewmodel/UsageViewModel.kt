@@ -1,6 +1,5 @@
 package com.example.smarthomemonitoringcontrolsystem.ui.viewmodel
 
-import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.smarthomemonitoringcontrolsystem.data.model.Device
@@ -14,7 +13,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -28,10 +26,7 @@ data class UsageUiState(
     val floorDevices: List<Device> = emptyList(),
     val floors: List<Floor> = emptyList(),
     val dateRange: DateRange = DateRange.TODAY,
-    val error: String? = null,
-    val exportSuccessful: Boolean = false,
-    val exportData: String = "",
-    val exportedFile: String = ""
+    val error: String? = null
 )
 
 enum class DateRange(val displayName: String) {
@@ -114,35 +109,7 @@ class UsageViewModel : ViewModel() {
         )
     }
 
-    fun exportReport(context: Context) {
-        val data = collectExportData()
-        val filePath = saveReportToFile(context, data)
-        _uiState.value = _uiState.value.copy(
-            exportSuccessful = true,
-            exportData = data,
-            exportedFile = filePath
-        )
-    }
-
-    private fun saveReportToFile(context: Context, reportData: String): String {
-        val dateFolder = "SmartHomeReports"
-        val exportsDir = File(context.filesDir, dateFolder)
-        if (!exportsDir.exists()) {
-            exportsDir.mkdirs()
-        }
-        val dateFormat = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault())
-        val fileName = "usage_report_${dateFormat.format(System.currentTimeMillis())}.csv"
-        val file = File(exportsDir, fileName)
-        return try {
-            file.writeText(reportData)
-            file.absolutePath
-        } catch (e: Exception) {
-            e.printStackTrace()
-            ""
-        }
-    }
-
-    private fun collectExportData(): String {
+    fun buildExportData(): String {
         val sb = StringBuilder()
         sb.append("Smart Home Usage Report\n")
         sb.append("Generated: ${SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault()).format(System.currentTimeMillis())}\n")
