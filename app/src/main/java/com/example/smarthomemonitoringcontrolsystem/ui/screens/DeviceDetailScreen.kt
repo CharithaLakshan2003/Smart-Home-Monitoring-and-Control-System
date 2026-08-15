@@ -2,6 +2,7 @@ package com.example.smarthomemonitoringcontrolsystem.ui.screens
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -55,6 +56,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -64,9 +66,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import coil.compose.rememberAsyncImagePainter
+import coil.request.ImageRequest
 import com.example.smarthomemonitoringcontrolsystem.data.model.Device
 import com.example.smarthomemonitoringcontrolsystem.data.model.DeviceState
 import com.example.smarthomemonitoringcontrolsystem.data.model.DeviceType
@@ -167,7 +173,15 @@ fun DeviceDetailScreen(
                             deviceViewModel.updateSchedule(device, start, end, enabled)
                         }
                     )
-                    DeviceType.CAMERA -> CameraDetail(device = device)
+                    DeviceType.CAMERA -> CameraDetail(
+                        device = device,
+                        onToggle = { deviceViewModel.toggleDeviceState(device) },
+                        onRefresh = {
+                            deviceViewModel.updateDevice(
+                                device.copy(lastUpdated = System.currentTimeMillis())
+                            )
+                        }
+                    )
                 }
 
                 Spacer(modifier = Modifier.height(32.dp))
@@ -697,7 +711,16 @@ private fun ScheduledLightDetail(
 
 // ========== 7e. Camera Detail ==========
 @Composable
-private fun CameraDetail(device: Device) {
+private fun CameraDetail(
+    device: Device,
+    onToggle: () -> Unit,
+    onRefresh: () -> Unit
+) {
+    val isDisconnected = device.state == DeviceState.DISCONNECTED || device.state == DeviceState.ERROR
+    val snapshotUrl = device.snapshotUrl
+    var refreshKey by remember { mutableIntStateOf(0) }
+    val context = LocalContext.current
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -711,6 +734,51 @@ private fun CameraDetail(device: Device) {
             modifier = Modifier.padding(24.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
+            // Camera feed toggle
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Column {
+                    Text(
+                        text = "Camera Feed",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                    Text(
+                        text = if (device.state == DeviceState.ON) "Live" else "Off",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = if (device.state == DeviceState.ON) DeviceOn
+                        else MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+                Switch(
+                    checked = device.state == DeviceState.ON,
+                    onCheckedChange = { if (!isDisconnected) onToggle() },
+                    enabled = !isDisconnected,
+                    modifier = Modifier.size(width = 56.dp, height = 32.dp),
+                    colors = SwitchDefaults.colors(
+                        checkedThumbColor = Color.White,
+                        checkedTrackColor = DeviceOn,
+                        uncheckedThumbColor = Color.White,
+                        uncheckedTrackColor = MaterialTheme.colorScheme.outline
+                    )
+                )
+            }
+
+            if (isDisconnected) {
+                Spacer(modifier = Modifier.height(12.dp))
+                Text(
+                    text = "Camera is ${device.state.displayName.lowercase()} — cannot toggle",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = DeviceDisconnected,
+                    textAlign = TextAlign.Center
+                )
+            }
+
+            Spacer(modifier = Modifier.height(20.dp))
+
             // Snapshot area
             Box(
                 modifier = Modifier
@@ -720,19 +788,49 @@ private fun CameraDetail(device: Device) {
                     .background(MaterialTheme.colorScheme.surface),
                 contentAlignment = Alignment.Center
             ) {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Icon(
-                        Icons.Filled.CameraAlt,
-                        "Camera",
-                        modifier = Modifier.size(48.dp),
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
+                if (snapshotUrl.isNotEmpty()) {
+                    val painter = rememberAsyncImagePainter(
+                        model = ImageRequest.Builder(context)
+                            .data(snapshotUrl)
+                            .memoryCacheKey("$snapshotUrl#$refreshKey")
+                            .diskCacheKey("$snapshotUrl#$refreshKey")
+                            .crossfade(true)
+                            .build(),
+                        contentScale = ContentScale.Crop
                     )
-                    Spacer(modifier = Modifier.height(8.dp))
+                    Image(
+                        painter = painter,
+                        contentDescription = "Camera snapshot",
+                        modifier = Modifier.fillMaxSize(),
+                        contentScale = ContentScale.Crop
+                    )
+                } else {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Icon(
+                            Icons.Filled.CameraAlt,
+                            "Camera",
+                            modifier = Modifier.size(48.dp),
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = "No Snapshot URL configured",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+
+                // Status overlay
+                if (device.state == DeviceState.ON && snapshotUrl.isNotEmpty()) {
                     Text(
-                        text = if (device.snapshotUrl.isNotEmpty()) "Snapshot Available"
-                        else "No Snapshot",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        text = "● REC",
+                        style = MaterialTheme.typography.labelSmall,
+                        fontWeight = FontWeight.Bold,
+                        color = DeviceError,
+                        modifier = Modifier
+                            .align(Alignment.TopEnd)
+                            .padding(8.dp)
                     )
                 }
             }
@@ -741,7 +839,11 @@ private fun CameraDetail(device: Device) {
 
             // Refresh button
             Button(
-                onClick = { /* Would refresh snapshot */ },
+                onClick = {
+                    refreshKey++
+                    onRefresh()
+                },
+                enabled = snapshotUrl.isNotEmpty(),
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(12.dp)
             ) {

@@ -6,7 +6,7 @@ export type DeviceState = 'ON' | 'OFF' | 'ERROR' | 'DISCONNECTED';
 
 export type LogIconType = 'on' | 'off' | 'error' | 'disconnected' | 'switch';
 
-export type PlanStyleId = 'plan_1' | 'plan_2' | 'plan_3' | 'plan_4' | 'plan_5';
+export type PlanStyleId = 'plan_1' | 'plan_2' | 'plan_3' | 'plan_4' | 'plan_5' | 'plan_6';
 
 export interface Device {
   id: string;

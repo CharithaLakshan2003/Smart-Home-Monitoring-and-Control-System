@@ -6,6 +6,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -13,6 +14,7 @@ import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -52,6 +54,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.smarthomemonitoringcontrolsystem.data.model.Device
@@ -62,10 +66,14 @@ import com.example.smarthomemonitoringcontrolsystem.ui.components.DeviceIcon
 import com.example.smarthomemonitoringcontrolsystem.ui.components.EmptyState
 import com.example.smarthomemonitoringcontrolsystem.ui.components.LoadingOverlay
 import com.example.smarthomemonitoringcontrolsystem.ui.components.StatusChip
+import com.example.smarthomemonitoringcontrolsystem.ui.components.planCellWalls
+import com.example.smarthomemonitoringcontrolsystem.ui.theme.DefaultRoomZones
 import com.example.smarthomemonitoringcontrolsystem.ui.theme.DeviceDisconnected
 import com.example.smarthomemonitoringcontrolsystem.ui.theme.DeviceError
 import com.example.smarthomemonitoringcontrolsystem.ui.theme.DeviceOff
 import com.example.smarthomemonitoringcontrolsystem.ui.theme.DeviceOn
+import com.example.smarthomemonitoringcontrolsystem.ui.theme.getPlanStyle
+import com.example.smarthomemonitoringcontrolsystem.ui.theme.roomForCell
 import com.example.smarthomemonitoringcontrolsystem.ui.viewmodel.DeviceViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -75,6 +83,7 @@ fun FloorDashboardScreen(
     floorName: String = "Floor",
     gridRows: Int = 4,
     gridCols: Int = 4,
+    planStyleId: String = "plan_1",
     deviceViewModel: DeviceViewModel,
     onAddDevice: () -> Unit,
     onDeviceClick: (String) -> Unit,
@@ -85,6 +94,8 @@ fun FloorDashboardScreen(
     
     // State for multiple device selection
     var devicesToPick by remember { mutableStateOf<List<Device>?>(null) }
+
+    val planStyle = getPlanStyle(planStyleId)
 
     LaunchedEffect(floorId) {
         deviceViewModel.loadDevices(floorId)
@@ -178,20 +189,20 @@ fun FloorDashboardScreen(
                 )
             } else {
                 // Floor plan grid with device overlay
-                Box(
+                BoxWithConstraints(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(16.dp)
                         .aspectRatio(gridCols.toFloat() / gridRows.toFloat())
                         .clip(RoundedCornerShape(16.dp))
-                        .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
+                        .background(planStyle.bgColor)
                         .border(
                             1.dp,
-                            MaterialTheme.colorScheme.outline.copy(alpha = 0.3f),
+                            planStyle.borderColor.copy(alpha = 0.6f),
                             RoundedCornerShape(16.dp)
                         )
                 ) {
-                    // Draw grid
+                    val isRoomsStyle = planStyle.id == "plan_6"
                     Column(
                         modifier = Modifier.fillMaxSize(),
                         verticalArrangement = Arrangement.SpaceEvenly
@@ -204,20 +215,54 @@ fun FloorDashboardScreen(
                                 horizontalArrangement = Arrangement.SpaceEvenly
                             ) {
                                 repeat(gridCols) { col ->
+                                    // Find devices at this grid position
+                                    val devicesAtPos = filteredDevices.filter { it.gridX == col && it.gridY == row }
+                                    val hasAlert = devicesAtPos.any {
+                                        it.state == DeviceState.ERROR || it.state == DeviceState.DISCONNECTED
+                                    }
                                     Box(
-                                        modifier = Modifier
-                                            .weight(1f)
-                                            .aspectRatio(1f)
-                                            .padding(2.dp)
-                                            .border(
-                                                0.5.dp,
-                                                MaterialTheme.colorScheme.outline.copy(alpha = 0.15f),
-                                                RoundedCornerShape(4.dp)
-                                            ),
+                                        modifier = if (isRoomsStyle) {
+                                            val room = roomForCell(row, col, gridRows, gridCols)
+                                            val rightRoom = if (col + 1 < gridCols) {
+                                                roomForCell(row, col + 1, gridRows, gridCols)
+                                            } else null
+                                            val bottomRoom = if (row + 1 < gridRows) {
+                                                roomForCell(row + 1, col, gridRows, gridCols)
+                                            } else null
+                                            Modifier
+                                                .weight(1f)
+                                                .aspectRatio(1f)
+                                                .background(
+                                                    if (hasAlert) DeviceError.copy(alpha = 0.2f)
+                                                    else room?.color?.copy(alpha = 0.14f) ?: Color.Transparent
+                                                )
+                                                .planCellWalls(
+                                                    wallColor = planStyle.borderColor,
+                                                    lineColor = planStyle.gridLineColor,
+                                                    leftWall = col == 0,
+                                                    topWall = row == 0,
+                                                    rightWall = col == gridCols - 1 || room?.name != rightRoom?.name,
+                                                    bottomWall = row == gridRows - 1 || room?.name != bottomRoom?.name
+                                                )
+                                        } else {
+                                            Modifier
+                                                .weight(1f)
+                                                .aspectRatio(1f)
+                                                .padding(2.dp)
+                                                .background(
+                                                    if (hasAlert) DeviceError.copy(alpha = 0.18f)
+                                                    else Color.Transparent,
+                                                    RoundedCornerShape(4.dp)
+                                                )
+                                                .border(
+                                                    if (hasAlert) 1.dp else 0.5.dp,
+                                                    if (hasAlert) DeviceError.copy(alpha = 0.7f)
+                                                    else planStyle.gridLineColor.copy(alpha = 0.35f),
+                                                    RoundedCornerShape(4.dp)
+                                                )
+                                        },
                                         contentAlignment = Alignment.Center
                                     ) {
-                                        // Find devices at this grid position
-                                        val devicesAtPos = filteredDevices.filter { it.gridX == col && it.gridY == row }
                                         if (devicesAtPos.isNotEmpty()) {
                                             if (devicesAtPos.size == 1) {
                                                 DeviceGridBadge(
@@ -234,6 +279,27 @@ fun FloorDashboardScreen(
                                     }
                                 }
                             }
+                        }
+                    }
+
+                    // Room labels overlay
+                    if (isRoomsStyle) {
+                        DefaultRoomZones.forEach { zone ->
+                            Text(
+                                text = zone.name,
+                                style = MaterialTheme.typography.labelSmall,
+                                fontWeight = FontWeight.SemiBold,
+                                color = planStyle.gridLineColor.copy(alpha = 0.9f),
+                                textAlign = TextAlign.Center,
+                                modifier = Modifier
+                                    .width(110.dp)
+                                    .offset {
+                                        IntOffset(
+                                            x = ((zone.colStart + zone.colEnd) / 2f * constraints.maxWidth - 55).toInt(),
+                                            y = ((zone.rowStart + zone.rowEnd) / 2f * constraints.maxHeight - 10).toInt()
+                                        )
+                                    }
+                            )
                         }
                     }
                 }
@@ -254,6 +320,26 @@ fun FloorDashboardScreen(
                         LegendItem(color = DeviceOff, label = "OFF")
                         LegendItem(color = DeviceError, label = "Error")
                         LegendItem(color = DeviceDisconnected, label = "Disconnected")
+                    }
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.Center,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .size(12.dp)
+                                .clip(RoundedCornerShape(3.dp))
+                                .background(DeviceError.copy(alpha = 0.18f))
+                                .border(1.dp, DeviceError.copy(alpha = 0.7f), RoundedCornerShape(3.dp))
+                        )
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text(
+                            text = "Red zone = device in alert (error / disconnected)",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
                     }
                     
                     Row(

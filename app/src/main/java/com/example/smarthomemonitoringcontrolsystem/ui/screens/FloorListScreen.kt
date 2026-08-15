@@ -50,6 +50,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -58,6 +59,7 @@ import com.example.smarthomemonitoringcontrolsystem.ui.components.EmptyState
 import com.example.smarthomemonitoringcontrolsystem.ui.components.LoadingOverlay
 import com.example.smarthomemonitoringcontrolsystem.ui.theme.DeviceOn
 import com.example.smarthomemonitoringcontrolsystem.ui.theme.DeviceError
+import com.example.smarthomemonitoringcontrolsystem.ui.theme.getPlanStyle
 import com.example.smarthomemonitoringcontrolsystem.ui.viewmodel.FloorViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -248,14 +250,14 @@ private fun FloorCard(
                     .fillMaxWidth()
                     .height(80.dp)
                     .clip(RoundedCornerShape(12.dp))
-                    .background(MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f)),
+                    .background(getPlanStyle(floor.imageUrl).bgColor),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
                     imageVector = Icons.Filled.GridView,
                     contentDescription = "Floor Plan",
                     modifier = Modifier.size(36.dp),
-                    tint = MaterialTheme.colorScheme.primary
+                    tint = Color.White.copy(alpha = 0.85f)
                 )
             }
 

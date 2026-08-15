@@ -5,13 +5,16 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -23,7 +26,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.GridView
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -50,18 +52,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
+import com.example.smarthomemonitoringcontrolsystem.ui.components.planCellWalls
+import com.example.smarthomemonitoringcontrolsystem.ui.theme.DefaultRoomZones
+import com.example.smarthomemonitoringcontrolsystem.ui.theme.PlanStyles
+import com.example.smarthomemonitoringcontrolsystem.ui.theme.roomForCell
 import com.example.smarthomemonitoringcontrolsystem.ui.viewmodel.FloorViewModel
-
-data class SamplePlan(val id: String, val name: String, val color: Color)
-
-private val samplePlans = listOf(
-    SamplePlan("plan_1", "Blueprint", Color(0xFF1A237E)),
-    SamplePlan("plan_2", "Modern", Color(0xFF004D40)),
-    SamplePlan("plan_3", "Classic", Color(0xFF3E2723)),
-    SamplePlan("plan_4", "Minimal", Color(0xFF37474F)),
-    SamplePlan("plan_5", "Bright", Color(0xFF1B5E20))
-)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -72,7 +70,7 @@ fun AddEditFloorScreen(
 ) {
     val isEditing = floorId != null && floorId != "new"
     var floorName by remember { mutableStateOf("") }
-    var selectedPlan by remember { mutableStateOf(samplePlans[0]) }
+    var selectedPlan by remember { mutableStateOf(PlanStyles[0]) }
     var gridRows by remember { mutableFloatStateOf(4f) }
     var gridCols by remember { mutableFloatStateOf(4f) }
 
@@ -136,12 +134,12 @@ fun AddEditFloorScreen(
             LazyRow(
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                items(samplePlans) { plan ->
-                    val isSelected = selectedPlan.id == plan.id
+                items(PlanStyles) { planStyle ->
+                    val isSelected = selectedPlan.id == planStyle.id
                     Card(
-                        onClick = { selectedPlan = plan },
+                        onClick = { selectedPlan = planStyle },
                         modifier = Modifier
-                            .size(width = 100.dp, height = 80.dp)
+                            .size(width = 100.dp, height = 92.dp)
                             .then(
                                 if (isSelected) Modifier.border(
                                     2.dp,
@@ -150,13 +148,92 @@ fun AddEditFloorScreen(
                                 ) else Modifier
                             ),
                         shape = RoundedCornerShape(12.dp),
-                        colors = CardDefaults.cardColors(containerColor = plan.color)
+                        colors = CardDefaults.cardColors(containerColor = planStyle.bgColor)
                     ) {
-                        Box(
+                        Column(
                             modifier = Modifier.fillMaxSize(),
-                            contentAlignment = Alignment.Center
+                            horizontalAlignment = Alignment.CenterHorizontally
                         ) {
+                            // Mini grid preview in the plan style's colors
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .weight(1f)
+                                    .padding(start = 10.dp, end = 10.dp, top = 6.dp, bottom = 2.dp),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                if (planStyle.id == "plan_6") {
+                                    // Rooms style: 2x2 zones with a wall cross
+                                    Column(
+                                        modifier = Modifier.fillMaxSize(),
+                                        verticalArrangement = Arrangement.SpaceEvenly
+                                    ) {
+                                        repeat(2) { r ->
+                                            Row(
+                                                modifier = Modifier.fillMaxWidth().weight(1f),
+                                                horizontalArrangement = Arrangement.SpaceEvenly
+                                            ) {
+                                                repeat(2) { c ->
+                                                    Box(
+                                                        modifier = Modifier
+                                                            .weight(1f)
+                                                            .padding(2.dp)
+                                                            .background(
+                                                                roomForCell(r, c, 2, 2)
+                                                                    ?.color
+                                                                    ?.copy(alpha = 0.25f)
+                                                                    ?: Color.Transparent
+                                                            )
+                                                    )
+                                                }
+                                            }
+                                        }
+                                    }
+                                    // Wall cross
+                                    Box(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .height(2.dp)
+                                            .background(planStyle.borderColor)
+                                    )
+                                    Box(
+                                        modifier = Modifier
+                                            .fillMaxHeight()
+                                            .width(2.dp)
+                                            .background(planStyle.borderColor)
+                                    )
+                                } else {
+                                    Column(
+                                        modifier = Modifier.fillMaxSize(),
+                                        verticalArrangement = Arrangement.SpaceEvenly
+                                    ) {
+                                        repeat(2) {
+                                            Row(
+                                                modifier = Modifier.fillMaxWidth(),
+                                                horizontalArrangement = Arrangement.SpaceEvenly
+                                            ) {
+                                                repeat(3) {
+                                                    Box(
+                                                        modifier = Modifier
+                                                            .weight(1f)
+                                                            .aspectRatio(1f)
+                                                            .padding(2.dp)
+                                                            .border(
+                                                                0.5.dp,
+                                                                planStyle.gridLineColor.copy(alpha = 0.8f),
+                                                                RoundedCornerShape(2.dp)
+                                                            )
+                                                    )
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
                             Column(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(bottom = 4.dp),
                                 horizontalAlignment = Alignment.CenterHorizontally
                             ) {
                                 if (isSelected) {
@@ -164,19 +241,13 @@ fun AddEditFloorScreen(
                                         Icons.Filled.Check,
                                         contentDescription = "Selected",
                                         tint = Color.White,
-                                        modifier = Modifier.size(20.dp)
+                                        modifier = Modifier.size(14.dp)
                                     )
                                 }
-                                Icon(
-                                    Icons.Filled.GridView,
-                                    contentDescription = plan.name,
-                                    tint = Color.White.copy(alpha = 0.7f),
-                                    modifier = Modifier.size(24.dp)
-                                )
                                 Text(
-                                    text = plan.name,
+                                    text = planStyle.name,
                                     style = MaterialTheme.typography.labelSmall,
-                                    color = Color.White.copy(alpha = 0.9f)
+                                    color = Color.White.copy(alpha = 0.95f)
                                 )
                             }
                         }
@@ -259,43 +330,90 @@ fun AddEditFloorScreen(
                 fontWeight = FontWeight.SemiBold,
                 color = MaterialTheme.colorScheme.onSurface
             )
-            Box(
+            BoxWithConstraints(
                 modifier = Modifier
                     .fillMaxWidth()
                     .aspectRatio(1.5f)
                     .clip(RoundedCornerShape(12.dp))
-                    .background(selectedPlan.color.copy(alpha = 0.3f))
-                    .border(1.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(12.dp))
+                    .background(selectedPlan.bgColor)
+                    .border(1.dp, selectedPlan.borderColor, RoundedCornerShape(12.dp))
             ) {
-                // Draw grid lines
+                val isRoomsStyle = selectedPlan.id == "plan_6"
+                val rows = gridRows.toInt()
+                val cols = gridCols.toInt()
+
+                // Draw grid cells
                 Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(8.dp),
+                    modifier = Modifier.fillMaxSize(),
                     verticalArrangement = Arrangement.SpaceEvenly
                 ) {
-                    repeat(gridRows.toInt()) {
+                    repeat(rows) { row ->
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .weight(1f),
                             horizontalArrangement = Arrangement.SpaceEvenly
                         ) {
-                            repeat(gridCols.toInt()) {
+                            repeat(cols) { col ->
                                 Box(
-                                    modifier = Modifier
-                                        .weight(1f)
-                                        .aspectRatio(1f)
-                                        .padding(2.dp)
-                                        .clip(RoundedCornerShape(4.dp))
-                                        .border(
-                                            1.dp,
-                                            MaterialTheme.colorScheme.outline.copy(alpha = 0.3f),
-                                            RoundedCornerShape(4.dp)
-                                        )
+                                    modifier = if (isRoomsStyle) {
+                                        val room = roomForCell(row, col, rows, cols)
+                                        val rightRoom = if (col + 1 < cols) {
+                                            roomForCell(row, col + 1, rows, cols)
+                                        } else null
+                                        val bottomRoom = if (row + 1 < rows) {
+                                            roomForCell(row + 1, col, rows, cols)
+                                        } else null
+                                        Modifier
+                                            .weight(1f)
+                                            .aspectRatio(1f)
+                                            .background(
+                                                room?.color?.copy(alpha = 0.14f) ?: Color.Transparent
+                                            )
+                                            .planCellWalls(
+                                                wallColor = selectedPlan.borderColor,
+                                                lineColor = selectedPlan.gridLineColor,
+                                                leftWall = col == 0,
+                                                topWall = row == 0,
+                                                rightWall = col == cols - 1 || room?.name != rightRoom?.name,
+                                                bottomWall = row == rows - 1 || room?.name != bottomRoom?.name
+                                            )
+                                    } else {
+                                        Modifier
+                                            .weight(1f)
+                                            .aspectRatio(1f)
+                                            .padding(2.dp)
+                                            .clip(RoundedCornerShape(4.dp))
+                                            .border(
+                                                1.dp,
+                                                selectedPlan.gridLineColor.copy(alpha = 0.7f),
+                                                RoundedCornerShape(4.dp)
+                                            )
+                                    }
                                 )
                             }
                         }
+                    }
+                }
+
+                // Room labels overlay
+                if (isRoomsStyle) {
+                    DefaultRoomZones.forEach { zone ->
+                        Text(
+                            text = zone.name,
+                            style = MaterialTheme.typography.labelSmall,
+                            fontWeight = FontWeight.SemiBold,
+                            color = selectedPlan.gridLineColor.copy(alpha = 0.9f),
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier
+                                .width(110.dp)
+                                .offset {
+                                    IntOffset(
+                                        x = ((zone.colStart + zone.colEnd) / 2f * constraints.maxWidth - 55).toInt(),
+                                        y = ((zone.rowStart + zone.rowEnd) / 2f * constraints.maxHeight - 10).toInt()
+                                    )
+                                }
+                        )
                     }
                 }
             }

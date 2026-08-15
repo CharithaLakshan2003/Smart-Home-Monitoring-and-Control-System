@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Layers, Map, Grid, Home, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Map, Grid, Home, ChevronLeft, ChevronRight } from 'lucide-react';
 import type { Device, Floor } from '../types';
 
 interface SidebarProps {

@@ -115,6 +115,7 @@ fun NavGraph(
                 floorName = floor?.name ?: "Floor",
                 gridRows = floor?.gridRows ?: 4,
                 gridCols = floor?.gridCols ?: 4,
+                planStyleId = floor?.imageUrl ?: "plan_1",
                 deviceViewModel = deviceViewModel,
                 onAddDevice = {
                     navController.navigate(Screen.AddDevice.createRoute(floorId))
