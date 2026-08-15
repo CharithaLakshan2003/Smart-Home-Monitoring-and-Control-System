@@ -8,6 +8,25 @@ switch devices from there.
 Built with **Vite + React + TypeScript**, charts by **Recharts**, icons by
 **lucide-react**. This project is independent of `hardware-simulator-reactApp`.
 
+## Project overview
+
+The Smart Home Monitoring and Control System is a full-stack smart home solution
+for monitoring and controlling IoT devices across multiple floors. It has two
+client apps that share one Firebase Realtime Database and stay in sync in real
+time:
+
+- **Android app** (`app/`) — Jetpack Compose, with floor-based dashboards, device
+  control (outlets, multi-switches, safety-timed, scheduled lights, cameras),
+  alerts, usage reports, and Firebase email/password auth.
+- **Web dashboard** (this project) — a browser-based dashboard that mirrors the
+  app: live floor plans, stats, alerts feed, usage charts, and full device
+  control.
+
+Both clients subscribe to the same `devices`, `floors`, `alerts`, and
+`usage_logs` nodes, so a change made on the phone is visible in the browser
+immediately and vice versa. See the root [`README.md`](../README.md) for the
+complete project documentation.
+
 ## Sections
 
 - **Stats overview** — KPI tiles: total devices, devices on, devices in alert, unread alerts.
