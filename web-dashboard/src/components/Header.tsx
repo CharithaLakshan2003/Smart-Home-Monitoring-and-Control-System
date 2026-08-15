@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { House, Wifi, WifiOff, Sun, Moon, Bell } from 'lucide-react';
+import { Wifi, WifiOff, Sun, Moon, Bell } from 'lucide-react';
+import { AppLogo } from './AppLogo';
 
 interface Props {
   isConnected: boolean;
@@ -43,26 +44,11 @@ export function Header({
       }}
     >
       <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-        <div
-          style={{
-            width: 46,
-            height: 46,
-            borderRadius: 14,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            background: 'linear-gradient(135deg,#00bcd4,#3f51b5)',
-            boxShadow: '0 0 22px var(--glow-cyan)',
-          }}
-        >
-          <House size={24} color="#fff" />
-        </div>
+        <AppLogo size={42} />
         <div>
-          <div style={{ fontSize: 19, fontWeight: 700, letterSpacing: '-0.01em' }}>
-            Smart Home Dashboard
-          </div>
-          <div style={{ fontSize: 12, color: 'var(--text-muted)', fontWeight: 600 }}>
-            Live monitoring · read-only
+          <div style={{ fontSize: 19, fontWeight: 700, letterSpacing: '-0.01em' }}>Smart Home</div>
+          <div style={{ fontSize: 12, color: 'var(--series-1)', fontWeight: 600 }}>
+            Monitor &amp; Control
           </div>
         </div>
       </div>
