@@ -31,7 +31,50 @@ class DeviceViewModel : ViewModel() {
     private val _uiState = MutableStateFlow(DeviceUiState())
     val uiState: StateFlow<DeviceUiState> = _uiState.asStateFlow()
 
+    // Usage logging for OFF transitions observed in realtime (local toggles or
+    // web simulator). Only transitions seen AFTER the first snapshot are logged,
+    // so an event that was already recorded before the app started is not re-logged.
+    private val observedStates = mutableMapOf<String, DeviceState>()
+    private var usageObserverReady = false
+
     private fun currentUserId(): String = auth.currentUser?.uid ?: ""
+
+    init {
+        observeUsageTransitions()
+    }
+
+    private fun observeUsageTransitions() {
+        viewModelScope.launch {
+            repository.getAllDevices().collect { devices ->
+                val ready = usageObserverReady
+                usageObserverReady = true
+                for (device in devices) {
+                    val previousState = observedStates[device.id]
+                    observedStates[device.id] = device.state
+                    if (ready && previousState == DeviceState.ON && device.state == DeviceState.OFF) {
+                        logUsage(device)
+                    }
+                }
+            }
+        }
+    }
+
+    private suspend fun logUsage(device: Device) {
+        if (device.turnedOnAt <= 0) return
+        val now = System.currentTimeMillis()
+        val duration = (now - device.turnedOnAt) / 1000
+        usageRepository.logUsage(
+            UsageLog(
+                userId = currentUserId(),
+                deviceId = device.id,
+                deviceName = device.label,
+                floorId = device.floorId,
+                onTime = device.turnedOnAt,
+                offTime = now,
+                durationSeconds = duration
+            )
+        )
+    }
 
     fun loadDevices(floorId: String) {
         viewModelScope.launch {
@@ -82,32 +125,17 @@ class DeviceViewModel : ViewModel() {
             )
             repository.updateDevice(updatedDevice)
 
-            if (newState == DeviceState.OFF && device.state == DeviceState.ON) {
-                val duration = if (device.turnedOnAt > 0) (now - device.turnedOnAt) / 1000 else 0
-                usageRepository.logUsage(
-                    UsageLog(
+            if (device.type.name == "SAFETY_TIMED" && device.autoOffTriggered) {
+                alertRepository.addAlert(
+                    Alert(
                         userId = currentUserId(),
                         deviceId = device.id,
-                        deviceName = device.label,
                         floorId = device.floorId,
-                        onTime = device.turnedOnAt,
-                        offTime = now,
-                        durationSeconds = duration
+                        deviceName = device.label,
+                        message = "${device.label} auto shut-off after max duration",
+                        timestamp = now
                     )
                 )
-
-                if (device.type.name == "SAFETY_TIMED" && device.autoOffTriggered) {
-                    alertRepository.addAlert(
-                        Alert(
-                            userId = currentUserId(),
-                            deviceId = device.id,
-                            floorId = device.floorId,
-                            deviceName = device.label,
-                            message = "${device.label} auto shut-off after max duration",
-                            timestamp = now
-                        )
-                    )
-                }
             }
 
             if (newState == DeviceState.ON && device.state == DeviceState.OFF) {
