@@ -4,6 +4,7 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -49,8 +50,10 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.TimePicker
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -577,6 +580,7 @@ private fun SafetyTimedDetail(
 
 // ========== 7d. Scheduled Light Detail ==========
 @Composable
+@OptIn(ExperimentalMaterial3Api::class)
 private fun ScheduledLightDetail(
     device: Device,
     onToggle: () -> Unit,
@@ -585,6 +589,14 @@ private fun ScheduledLightDetail(
     var scheduleStart by remember { mutableStateOf(device.scheduleStart) }
     var scheduleEnd by remember { mutableStateOf(device.scheduleEnd) }
     var scheduleEnabled by remember { mutableStateOf(device.scheduleEnabled) }
+    var editingTime by remember { mutableStateOf<String?>(null) }
+
+    // Keep local state in sync with the stored device
+    LaunchedEffect(device.scheduleStart, device.scheduleEnd, device.scheduleEnabled) {
+        scheduleStart = device.scheduleStart
+        scheduleEnd = device.scheduleEnd
+        scheduleEnabled = device.scheduleEnabled
+    }
 
     Card(
         modifier = Modifier
@@ -654,7 +666,7 @@ private fun ScheduledLightDetail(
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // Schedule display
+            // Schedule display (tap a time to edit it)
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(12.dp),
@@ -672,7 +684,13 @@ private fun ScheduledLightDetail(
                     horizontalArrangement = Arrangement.SpaceEvenly,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Column(
+                        modifier = Modifier
+                            .weight(1f)
+                            .clickable { editingTime = "start" }
+                            .padding(4.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
                         Text(
                             "ON at",
                             style = MaterialTheme.typography.labelSmall,
@@ -684,13 +702,25 @@ private fun ScheduledLightDetail(
                             fontWeight = FontWeight.Bold,
                             color = if (scheduleEnabled) DeviceOn else MaterialTheme.colorScheme.onSurfaceVariant
                         )
+                        Spacer(modifier = Modifier.height(2.dp))
+                        Text(
+                            "Tap to change",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.primary.copy(alpha = 0.7f)
+                        )
                     }
                     Text(
                         "→",
                         style = MaterialTheme.typography.headlineSmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Column(
+                        modifier = Modifier
+                            .weight(1f)
+                            .clickable { editingTime = "end" }
+                            .padding(4.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
                         Text(
                             "OFF at",
                             style = MaterialTheme.typography.labelSmall,
@@ -702,10 +732,64 @@ private fun ScheduledLightDetail(
                             fontWeight = FontWeight.Bold,
                             color = if (scheduleEnabled) DeviceError else MaterialTheme.colorScheme.onSurfaceVariant
                         )
+                        Spacer(modifier = Modifier.height(2.dp))
+                        Text(
+                            "Tap to change",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.primary.copy(alpha = 0.7f)
+                        )
                     }
                 }
             }
+
+            Spacer(modifier = Modifier.height(12.dp))
+            Text(
+                text = "Light turns ON at start time and OFF at end time each day",
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f),
+                textAlign = TextAlign.Center
+            )
         }
+    }
+
+    // Time picker dialog
+    editingTime?.let { which ->
+        val (initialHour, initialMinute) = parseTime(if (which == "start") scheduleStart else scheduleEnd)
+        val timePickerState = rememberTimePickerState(
+            initialHour = initialHour,
+            initialMinute = initialMinute,
+            is24Hour = true
+        )
+        AlertDialog(
+            onDismissRequest = { editingTime = null },
+            title = {
+                Text(
+                    text = if (which == "start") "Set ON time" else "Set OFF time",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold
+                )
+            },
+            text = {
+                TimePicker(state = timePickerState)
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        val newTime = formatTime(timePickerState.hour, timePickerState.minute)
+                        if (which == "start") scheduleStart = newTime else scheduleEnd = newTime
+                        onUpdateSchedule(scheduleStart, scheduleEnd, scheduleEnabled)
+                        editingTime = null
+                    }
+                ) {
+                    Text("OK")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { editingTime = null }) {
+                    Text("Cancel")
+                }
+            }
+        )
     }
 }
 
@@ -908,4 +992,17 @@ private fun formatDuration(seconds: Long): String {
     val min = seconds / 60
     val sec = seconds % 60
     return "${min}:${sec.toString().padStart(2, '0')}"
+}
+
+private fun parseTime(time: String): Pair<Int, Int> {
+    return try {
+        val parts = time.split(":")
+        Pair(parts[0].toInt().coerceIn(0, 23), parts[1].toInt().coerceIn(0, 59))
+    } catch (e: Exception) {
+        Pair(18, 0)
+    }
+}
+
+private fun formatTime(hour: Int, minute: Int): String {
+    return "${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}"
 }
