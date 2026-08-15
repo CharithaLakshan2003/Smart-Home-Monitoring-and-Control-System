@@ -16,6 +16,7 @@ interface Props {
   devices: Device[];
   selectedFloorId: string | null;
   onSelectFloor: (id: string) => void;
+  onSelectDevice: (device: Device) => void;
 }
 
 const LEGEND: Array<{ state: keyof typeof STATE_COLORS }> = [
@@ -25,7 +26,13 @@ const LEGEND: Array<{ state: keyof typeof STATE_COLORS }> = [
   { state: 'DISCONNECTED' },
 ];
 
-export function FloorPlanGrid({ floors, devices, selectedFloorId, onSelectFloor }: Props) {
+export function FloorPlanGrid({
+  floors,
+  devices,
+  selectedFloorId,
+  onSelectFloor,
+  onSelectDevice,
+}: Props) {
   const floor = floors.find((f) => f.id === selectedFloorId) ?? floors[0];
 
   const floorDevices = floor ? devices.filter((d) => d.floorId === floor.id) : [];
@@ -139,9 +146,9 @@ export function FloorPlanGrid({ floors, devices, selectedFloorId, onSelectFloor 
                       }}
                     >
                       {cellDevices.length === 1 ? (
-                        <DeviceBadge device={cellDevices[0]} size={38} />
+                        <DeviceBadge device={cellDevices[0]} size={38} onClick={onSelectDevice} />
                       ) : cellDevices.length > 1 ? (
-                        <Cluster devices={cellDevices} />
+                        <Cluster devices={cellDevices} onSelectDevice={onSelectDevice} />
                       ) : null}
                     </div>
                   );
@@ -206,6 +213,15 @@ export function FloorPlanGrid({ floors, devices, selectedFloorId, onSelectFloor 
                 {sorted.map((device) => (
                   <div
                     key={device.id}
+                    role="button"
+                    tabIndex={0}
+                    onClick={() => onSelectDevice(device)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        onSelectDevice(device);
+                      }
+                    }}
                     style={{
                       display: 'flex',
                       alignItems: 'center',
@@ -214,6 +230,7 @@ export function FloorPlanGrid({ floors, devices, selectedFloorId, onSelectFloor 
                       borderRadius: 14,
                       background: 'var(--surface-2)',
                       border: '1px solid var(--border)',
+                      cursor: 'pointer',
                     }}
                   >
                     <span
@@ -259,12 +276,18 @@ export function FloorPlanGrid({ floors, devices, selectedFloorId, onSelectFloor 
   );
 }
 
-function Cluster({ devices }: { devices: Device[] }) {
+function Cluster({
+  devices,
+  onSelectDevice,
+}: {
+  devices: Device[];
+  onSelectDevice: (device: Device) => void;
+}) {
   const shown = devices.slice(0, 3);
   return (
     <div style={{ display: 'flex', flexWrap: 'wrap', gap: 2, justifyContent: 'center', maxWidth: 46 }}>
       {shown.map((d) => (
-        <DeviceBadge key={d.id} device={d} size={18} />
+        <DeviceBadge key={d.id} device={d} size={18} onClick={onSelectDevice} />
       ))}
       {devices.length > 3 && (
         <span

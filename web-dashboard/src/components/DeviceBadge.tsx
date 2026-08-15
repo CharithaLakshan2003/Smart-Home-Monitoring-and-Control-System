@@ -5,11 +5,13 @@ import { STATE_COLORS, STATE_GLOW, STATE_LABELS } from '../utils/helpers';
 interface Props {
   device: Device;
   size?: number;
+  onClick?: (device: Device) => void;
 }
 
 /** Circular grid badge — mirrors the app's DeviceGridBadge.kt:
- *  surfaceContainerHigh fill, 2px state-colored ring, glow when ON/alert. */
-export function DeviceBadge({ device, size = 44 }: Props) {
+ *  surfaceContainerHigh fill, 2px state-colored ring, glow when ON/alert.
+ *  Clickable when `onClick` is supplied, which opens the control panel. */
+export function DeviceBadge({ device, size = 44, onClick }: Props) {
   const color = STATE_COLORS[device.state];
   const glow = STATE_GLOW[device.state];
   const isMini = size < 40;
@@ -18,6 +20,19 @@ export function DeviceBadge({ device, size = 44 }: Props) {
   return (
     <div
       title={`${device.label || 'Device'} · ${DEVICE_TYPE_LABELS[device.type]} · ${STATE_LABELS[device.state]}`}
+      role={onClick ? 'button' : undefined}
+      tabIndex={onClick ? 0 : undefined}
+      onClick={onClick ? () => onClick(device) : undefined}
+      onKeyDown={
+        onClick
+          ? (e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                onClick(device);
+              }
+            }
+          : undefined
+      }
       style={{
         width: size,
         height: size,
@@ -31,7 +46,7 @@ export function DeviceBadge({ device, size = 44 }: Props) {
         border: `${isMini ? 1 : 2}px solid ${color}`,
         color,
         boxShadow: glow === 'transparent' ? 'none' : `0 0 ${isMini ? 6 : 12}px ${glow}`,
-        cursor: 'default',
+        cursor: onClick ? 'pointer' : 'default',
         transition: 'transform 0.15s ease',
       }}
       onMouseEnter={(e) => (e.currentTarget.style.transform = 'scale(1.1)')}

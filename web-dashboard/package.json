@@ -3,7 +3,7 @@
   "private": true,
   "version": "1.0.0",
   "type": "module",
-  "description": "Read-only monitoring dashboard for the Smart Home Monitoring & Control System",
+  "description": "Monitoring and control dashboard for the Smart Home Monitoring & Control System",
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",

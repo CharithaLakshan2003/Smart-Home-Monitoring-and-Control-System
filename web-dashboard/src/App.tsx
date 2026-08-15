@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Header } from './components/Header';
 import { StatsOverview } from './components/StatsOverview';
 import { FloorPlanGrid } from './components/FloorPlanGrid';
+import { DeviceDetailPanel } from './components/DeviceDetailPanel';
 import { AlertsPage } from './components/AlertsFeed';
 import { UsageCharts } from './components/UsageCharts';
 import { useDevices } from './hooks/useDevices';
@@ -24,8 +25,18 @@ function App() {
   const unreadCount = useMemo(() => alerts.filter((a) => !a.read).length, [alerts]);
 
   const [selectedFloorId, setSelectedFloorId] = useState<string | null>(null);
+  const [selectedDeviceId, setSelectedDeviceId] = useState<string | null>(null);
   const [theme, setTheme] = useState<'dark' | 'light'>('dark');
   const [view, setView] = useState<View>('dashboard');
+
+  // Resolve against the live map so the panel re-renders as writes land, and
+  // closes by itself if the device is deleted from another client.
+  const selectedDevice = selectedDeviceId ? devicesMap[selectedDeviceId] ?? null : null;
+  // Alerts raised from the dashboard are attributed to the floor's owner, since
+  // the app filters alerts by userId and the dashboard has no signed-in user.
+  const selectedDeviceOwner = selectedDevice
+    ? floorsMap[selectedDevice.floorId]?.userId ?? ''
+    : '';
 
   // Default to the first floor once floors arrive.
   useEffect(() => {
@@ -77,10 +88,19 @@ function App() {
             devices={devices}
             selectedFloorId={selectedFloorId}
             onSelectFloor={setSelectedFloorId}
+            onSelectDevice={(d) => setSelectedDeviceId(d.id)}
           />
 
           <UsageCharts logs={usageLogs} theme={theme} />
         </main>
+      )}
+
+      {selectedDevice && (
+        <DeviceDetailPanel
+          device={selectedDevice}
+          ownerUserId={selectedDeviceOwner}
+          onClose={() => setSelectedDeviceId(null)}
+        />
       )}
     </div>
   );
